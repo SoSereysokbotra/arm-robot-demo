@@ -1,0 +1,1018 @@
+[
+  {
+    "id": "tab_arm",
+    "type": "tab",
+    "label": "Robot Arm",
+    "disabled": false,
+    "info": "MQTT control for the ESP32 robot arm"
+  },
+  {
+    "id": "broker_local",
+    "type": "mqtt-broker",
+    "name": "Mosquitto",
+    "broker": "192.168.1.194",
+    "port": "1883",
+    "clientid": "nodered-arm",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "ui_base",
+    "type": "ui_base",
+    "theme": {
+      "name": "theme-dark",
+      "lightTheme": {
+        "default": "#0094CE",
+        "baseColor": "#0094CE",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+        "edited": false,
+        "reset": false
+      },
+      "darkTheme": {
+        "default": "#097479",
+        "baseColor": "#097479",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+        "edited": true,
+        "reset": false
+      },
+      "customTheme": {
+        "name": "Untitled Theme 1",
+        "default": "#4B7930",
+        "baseColor": "#4B7930",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+      },
+      "themeState": {
+        "base-color": {
+          "default": "#097479",
+          "value": "#097479",
+          "edited": false
+        },
+        "page-titlebar-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "page-backgroundColor": {
+          "value": "#111111",
+          "edited": false
+        },
+        "page-sidebar-backgroundColor": {
+          "value": "#000000",
+          "edited": false
+        },
+        "group-textColor": {
+          "value": "#0eb8c0",
+          "edited": false
+        },
+        "group-borderColor": {
+          "value": "#555555",
+          "edited": false
+        },
+        "group-backgroundColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "widget-textColor": {
+          "value": "#eeeeee",
+          "edited": false
+        },
+        "widget-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "widget-borderColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "base-font": {
+          "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+        }
+      },
+      "angularTheme": {
+        "primary": "indigo",
+        "accents": "blue",
+        "warn": "red",
+        "background": "grey",
+        "palette": "light"
+      }
+    },
+    "site": {
+      "name": "Robot Arm Control",
+      "hideToolbar": "false",
+      "allowSwipe": "false",
+      "lockMenu": "false",
+      "allowTempTheme": "true",
+      "dateFormat": "DD/MM/YYYY",
+      "sizes": {
+        "sx": 48,
+        "sy": 48,
+        "gx": 6,
+        "gy": 6,
+        "cx": 6,
+        "cy": 6,
+        "px": 0,
+        "py": 0
+      }
+    }
+  },
+  {
+    "id": "ui_tab_arm",
+    "type": "ui_tab",
+    "name": "Robot Arm",
+    "icon": "precision_manufacturing",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "grp_joints",
+    "type": "ui_group",
+    "name": "Joints",
+    "tab": "ui_tab_arm",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_gauges",
+    "type": "ui_group",
+    "name": "Live angles",
+    "tab": "ui_tab_arm",
+    "order": 2,
+    "disp": true,
+    "width": "8",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_presets",
+    "type": "ui_group",
+    "name": "Presets",
+    "tab": "ui_tab_arm",
+    "order": 3,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_base",
+    "type": "ui_group",
+    "name": "Base (continuous rotation)",
+    "tab": "ui_tab_arm",
+    "order": 4,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_status",
+    "type": "ui_group",
+    "name": "Status",
+    "tab": "ui_tab_arm",
+    "order": 5,
+    "disp": true,
+    "width": "6",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "mqtt_out",
+    "type": "mqtt out",
+    "z": "tab_arm",
+    "name": "-> Mosquitto",
+    "topic": "",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker_local",
+    "x": 900,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "slider_ch1",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH1 Shoulder",
+    "label": "CH1 Shoulder",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/servo/1",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 520,
+    "y": 80,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch2",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH2 Elbow",
+    "label": "CH2 Elbow",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/servo/2",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 520,
+    "y": 130,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch3",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH3 Wrist roll",
+    "label": "CH3 Wrist roll",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/servo/3",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 520,
+    "y": 180,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch4",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH4 Wrist pitch",
+    "label": "CH4 Wrist pitch",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/servo/4",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 520,
+    "y": 230,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch5",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH5 Gripper",
+    "label": "CH5 Gripper",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/servo/5",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 520,
+    "y": 280,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_grip_open",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Gripper open",
+    "group": "grp_joints",
+    "order": 6,
+    "width": "4",
+    "height": "1",
+    "passthru": false,
+    "label": "GRIPPER OPEN",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#16a085",
+    "className": "",
+    "icon": "",
+    "payload": "20",
+    "payloadType": "str",
+    "topic": "arm/servo/5",
+    "topicType": "str",
+    "x": 520,
+    "y": 340,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_grip_close",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Gripper close",
+    "group": "grp_joints",
+    "order": 7,
+    "width": "4",
+    "height": "1",
+    "passthru": false,
+    "label": "GRIPPER CLOSE",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#8e44ad",
+    "className": "",
+    "icon": "",
+    "payload": "90",
+    "payloadType": "str",
+    "topic": "arm/servo/5",
+    "topicType": "str",
+    "x": 520,
+    "y": 390,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "gauge_ch1",
+    "type": "ui_gauge",
+    "z": "tab_arm",
+    "name": "Shoulder",
+    "group": "grp_gauges",
+    "order": 1,
+    "width": "4",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Shoulder",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 180,
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "diff": false,
+    "className": "",
+    "x": 900,
+    "y": 520,
+    "wires": []
+  },
+  {
+    "id": "gauge_ch2",
+    "type": "ui_gauge",
+    "z": "tab_arm",
+    "name": "Elbow",
+    "group": "grp_gauges",
+    "order": 2,
+    "width": "4",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Elbow",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 180,
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "diff": false,
+    "className": "",
+    "x": 900,
+    "y": 570,
+    "wires": []
+  },
+  {
+    "id": "gauge_ch3",
+    "type": "ui_gauge",
+    "z": "tab_arm",
+    "name": "Wrist roll",
+    "group": "grp_gauges",
+    "order": 3,
+    "width": "4",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Wrist roll",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 180,
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "diff": false,
+    "className": "",
+    "x": 900,
+    "y": 620,
+    "wires": []
+  },
+  {
+    "id": "gauge_ch4",
+    "type": "ui_gauge",
+    "z": "tab_arm",
+    "name": "Wrist pitch",
+    "group": "grp_gauges",
+    "order": 4,
+    "width": "4",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Wrist pitch",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 180,
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "diff": false,
+    "className": "",
+    "x": 900,
+    "y": 670,
+    "wires": []
+  },
+  {
+    "id": "gauge_ch5",
+    "type": "ui_gauge",
+    "z": "tab_arm",
+    "name": "Gripper",
+    "group": "grp_gauges",
+    "order": 5,
+    "width": "4",
+    "height": "3",
+    "gtype": "gage",
+    "title": "Gripper",
+    "label": "deg",
+    "format": "{{value}}",
+    "min": 0,
+    "max": 180,
+    "colors": [
+      "#00b500",
+      "#e6e600",
+      "#ca3838"
+    ],
+    "seg1": "",
+    "seg2": "",
+    "diff": false,
+    "className": "",
+    "x": 900,
+    "y": 720,
+    "wires": []
+  },
+  {
+    "id": "in_state",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/state",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 620,
+    "wires": [
+      [
+        "fn_split"
+      ]
+    ]
+  },
+  {
+    "id": "fn_split",
+    "type": "function",
+    "z": "tab_arm",
+    "name": "split state -> CH1..CH5",
+    "func": "// arm/state = {\"1\":90,\"2\":120,...}  ->  one message per output\nreturn [1,2,3,4,5].map(ch => ({ payload: Number(msg.payload[ch]) }));",
+    "outputs": 5,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 620,
+    "wires": [
+      [
+        "slider_ch1",
+        "gauge_ch1"
+      ],
+      [
+        "slider_ch2",
+        "gauge_ch2"
+      ],
+      [
+        "slider_ch3",
+        "gauge_ch3"
+      ],
+      [
+        "slider_ch4",
+        "gauge_ch4"
+      ],
+      [
+        "slider_ch5",
+        "gauge_ch5"
+      ]
+    ]
+  },
+  {
+    "id": "btn_preset_home",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Preset home",
+    "group": "grp_presets",
+    "order": 1,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "HOME",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#e67e22",
+    "className": "",
+    "icon": "home",
+    "payload": "home",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 520,
+    "y": 880,
+    "wires": [
+      [
+        "fn_presets"
+      ]
+    ]
+  },
+  {
+    "id": "btn_preset_rest",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Preset rest",
+    "group": "grp_presets",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "REST",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#7f8c8d",
+    "className": "",
+    "icon": "hotel",
+    "payload": "rest",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 520,
+    "y": 930,
+    "wires": [
+      [
+        "fn_presets"
+      ]
+    ]
+  },
+  {
+    "id": "btn_preset_pick",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Preset pick",
+    "group": "grp_presets",
+    "order": 3,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "PICK",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#2980b9",
+    "className": "",
+    "icon": "pan_tool",
+    "payload": "pick",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 520,
+    "y": 980,
+    "wires": [
+      [
+        "fn_presets"
+      ]
+    ]
+  },
+  {
+    "id": "btn_preset_place",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Preset place",
+    "group": "grp_presets",
+    "order": 4,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "PLACE",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#27ae60",
+    "className": "",
+    "icon": "place",
+    "payload": "place",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 520,
+    "y": 1030,
+    "wires": [
+      [
+        "fn_presets"
+      ]
+    ]
+  },
+  {
+    "id": "btn_preset_wave",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Preset wave",
+    "group": "grp_presets",
+    "order": 5,
+    "width": "3",
+    "height": "1",
+    "passthru": false,
+    "label": "WAVE DEMO",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#c0392b",
+    "className": "",
+    "icon": "waving_hand",
+    "payload": "wave",
+    "payloadType": "str",
+    "topic": "",
+    "topicType": "str",
+    "x": 520,
+    "y": 1080,
+    "wires": [
+      [
+        "fn_presets"
+      ]
+    ]
+  },
+  {
+    "id": "fn_presets",
+    "type": "function",
+    "z": "tab_arm",
+    "name": "preset -> servo commands",
+    "func": "// Edit these angles to match YOUR arm.  CH: 1 shoulder, 2 elbow, 3 wrist roll, 4 wrist pitch, 5 gripper\nconst presets = {\n    rest:  {1: 90,  2: 90,  3: 90,  4: 90,  5: 90},\n    pick:  {1: 120, 2: 60,  3: 40,  4: 90,  5: 20},\n    place: {1: 60,  2: 120, 3: 60,  4: 90,  5: 90},\n};\nconst name = msg.payload;\n\nif (name === \"home\") return { topic: \"arm/home\", payload: \"1\" };\n\nif (name === \"wave\") {   // demo: wrist roll back and forth\n    const steps = [[3, 40], [3, 140], [3, 40], [3, 140], [3, 90]];\n    steps.forEach(([ch, a], i) =>\n        setTimeout(() => node.send({ topic: \"arm/servo/\" + ch, payload: String(a) }), i * 700));\n    return null;\n}\n\nconst pose = presets[name];\nif (!pose) return null;\nreturn [Object.entries(pose).map(([ch, a]) => ({ topic: \"arm/servo/\" + ch, payload: String(a) }))];\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 760,
+    "y": 940,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_base_speed",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "Base speed",
+    "label": "Speed %",
+    "tooltip": "",
+    "group": "grp_base",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/base/speed",
+    "topicType": "str",
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "className": "",
+    "x": 520,
+    "y": 1160,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_ccw",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base ccw",
+    "group": "grp_base",
+    "order": 2,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "◀ CCW",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#2980b9",
+    "className": "",
+    "icon": "",
+    "payload": "ccw",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 520,
+    "y": 1210,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_stop",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base stop",
+    "group": "grp_base",
+    "order": 3,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "STOP",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#c0392b",
+    "className": "",
+    "icon": "stop",
+    "payload": "stop",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 520,
+    "y": 1260,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_cw",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base cw",
+    "group": "grp_base",
+    "order": 4,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "CW ▶",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#2980b9",
+    "className": "",
+    "icon": "",
+    "payload": "cw",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 520,
+    "y": 1310,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "in_status",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/status",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 1400,
+    "wires": [
+      [
+        "fn_status"
+      ]
+    ]
+  },
+  {
+    "id": "fn_status",
+    "type": "function",
+    "z": "tab_arm",
+    "name": "colour",
+    "func": "const on = msg.payload === \"online\";\nmsg.payload = on ? \"<font color=\\\"#2ecc71\\\"><b>&#9679; ONLINE</b></font>\"\n                 : \"<font color=\\\"#e74c3c\\\"><b>&#9679; OFFLINE</b></font>\";\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 1400,
+    "wires": [
+      [
+        "txt_status"
+      ]
+    ]
+  },
+  {
+    "id": "txt_status",
+    "type": "ui_text",
+    "z": "tab_arm",
+    "group": "grp_status",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "ESP32",
+    "label": "ESP32",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 620,
+    "y": 1400,
+    "wires": []
+  },
+  {
+    "id": "in_log",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/log",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 1460,
+    "wires": [
+      [
+        "fn_log",
+        "debug_log"
+      ]
+    ]
+  },
+  {
+    "id": "fn_log",
+    "type": "function",
+    "z": "tab_arm",
+    "name": "last 6 lines",
+    "func": "const t = new Date().toLocaleTimeString();\nconst lines = context.get(\"lines\") || [];\nlines.unshift(\"<font color=\\\"#888\\\"><small>\" + t + \"</small></font> \" + msg.payload);\nwhile (lines.length > 6) lines.pop();\ncontext.set(\"lines\", lines);\nmsg.payload = lines.join(\"<br/>\");\nreturn msg;\n",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 1460,
+    "wires": [
+      [
+        "txt_log"
+      ]
+    ]
+  },
+  {
+    "id": "txt_log",
+    "type": "ui_text",
+    "z": "tab_arm",
+    "group": "grp_status",
+    "order": 2,
+    "width": "6",
+    "height": "6",
+    "name": "Log",
+    "label": "Log",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 13,
+    "color": "#000000",
+    "x": 620,
+    "y": 1460,
+    "wires": []
+  },
+  {
+    "id": "debug_log",
+    "type": "debug",
+    "z": "tab_arm",
+    "name": "arm/log",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 620,
+    "y": 1510,
+    "wires": []
+  }
+]

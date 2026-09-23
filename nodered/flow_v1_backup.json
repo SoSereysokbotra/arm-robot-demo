@@ -1,0 +1,632 @@
+[
+  {
+    "id": "tab_arm",
+    "type": "tab",
+    "label": "Robot Arm",
+    "disabled": false,
+    "info": "MQTT control for the ESP32 robot arm"
+  },
+  {
+    "id": "broker_local",
+    "type": "mqtt-broker",
+    "name": "Mosquitto (local)",
+    "broker": "192.168.1.194",
+    "port": "1883",
+    "clientid": "nodered-arm",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "ui_base",
+    "type": "ui_base",
+    "theme": {
+      "name": "theme-dark",
+      "lightTheme": {
+        "default": "#0094CE",
+        "baseColor": "#0094CE",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+        "edited": false,
+        "reset": false
+      },
+      "darkTheme": {
+        "default": "#097479",
+        "baseColor": "#097479",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+        "edited": true,
+        "reset": false
+      },
+      "customTheme": {
+        "name": "Untitled Theme 1",
+        "default": "#4B7930",
+        "baseColor": "#4B7930",
+        "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+      },
+      "themeState": {
+        "base-color": {
+          "default": "#097479",
+          "value": "#097479",
+          "edited": false
+        },
+        "page-titlebar-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "page-backgroundColor": {
+          "value": "#111111",
+          "edited": false
+        },
+        "page-sidebar-backgroundColor": {
+          "value": "#000000",
+          "edited": false
+        },
+        "group-textColor": {
+          "value": "#0eb8c0",
+          "edited": false
+        },
+        "group-borderColor": {
+          "value": "#555555",
+          "edited": false
+        },
+        "group-backgroundColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "widget-textColor": {
+          "value": "#eeeeee",
+          "edited": false
+        },
+        "widget-backgroundColor": {
+          "value": "#097479",
+          "edited": false
+        },
+        "widget-borderColor": {
+          "value": "#333333",
+          "edited": false
+        },
+        "base-font": {
+          "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+        }
+      },
+      "angularTheme": {
+        "primary": "indigo",
+        "accents": "blue",
+        "warn": "red",
+        "background": "grey",
+        "palette": "light"
+      }
+    },
+    "site": {
+      "name": "Robot Arm Control",
+      "hideToolbar": "false",
+      "allowSwipe": "false",
+      "lockMenu": "false",
+      "allowTempTheme": "true",
+      "dateFormat": "DD/MM/YYYY",
+      "sizes": {
+        "sx": 48,
+        "sy": 48,
+        "gx": 6,
+        "gy": 6,
+        "cx": 6,
+        "cy": 6,
+        "px": 0,
+        "py": 0
+      }
+    }
+  },
+  {
+    "id": "ui_tab_arm",
+    "type": "ui_tab",
+    "name": "Robot Arm",
+    "icon": "precision_manufacturing",
+    "disabled": false,
+    "hidden": false
+  },
+  {
+    "id": "grp_joints",
+    "type": "ui_group",
+    "name": "Joints",
+    "tab": "ui_tab_arm",
+    "order": 1,
+    "disp": true,
+    "width": "8",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_base",
+    "type": "ui_group",
+    "name": "Base (continuous rotation)",
+    "tab": "ui_tab_arm",
+    "order": 2,
+    "disp": true,
+    "width": "8",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "grp_status",
+    "type": "ui_group",
+    "name": "Status",
+    "tab": "ui_tab_arm",
+    "order": 3,
+    "disp": true,
+    "width": "8",
+    "collapse": false,
+    "className": ""
+  },
+  {
+    "id": "mqtt_out",
+    "type": "mqtt out",
+    "z": "tab_arm",
+    "name": "→ Mosquitto",
+    "topic": "",
+    "qos": "0",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker_local",
+    "x": 620,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "slider_ch1",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH1 Shoulder",
+    "label": "CH1 Shoulder",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "all",
+    "topic": "arm/servo/1",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 180,
+    "y": 80,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch2",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH2 Elbow",
+    "label": "CH2 Elbow",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "all",
+    "topic": "arm/servo/2",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 180,
+    "y": 130,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch3",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH3 Wrist pitch",
+    "label": "CH3 Wrist pitch",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "all",
+    "topic": "arm/servo/3",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 180,
+    "y": 180,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch4",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH4 Wrist roll",
+    "label": "CH4 Wrist roll",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "all",
+    "topic": "arm/servo/4",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 180,
+    "y": 230,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_ch5",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "CH5 Gripper",
+    "label": "CH5 Gripper",
+    "tooltip": "",
+    "group": "grp_joints",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "all",
+    "topic": "arm/servo/5",
+    "topicType": "str",
+    "min": 0,
+    "max": 180,
+    "step": 1,
+    "className": "",
+    "x": 180,
+    "y": 280,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_home",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Home",
+    "group": "grp_joints",
+    "order": 6,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "label": "HOME POSE",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#e67e22",
+    "className": "",
+    "icon": "home",
+    "payload": "1",
+    "payloadType": "str",
+    "topic": "arm/home",
+    "topicType": "str",
+    "x": 180,
+    "y": 340,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "slider_base_speed",
+    "type": "ui_slider",
+    "z": "tab_arm",
+    "name": "Base speed",
+    "label": "Base speed %",
+    "tooltip": "",
+    "group": "grp_base",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "outs": "end",
+    "topic": "arm/base/speed",
+    "topicType": "str",
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "className": "",
+    "x": 180,
+    "y": 420,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_ccw",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base ccw",
+    "group": "grp_base",
+    "order": 2,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "◀ CCW",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#2980b9",
+    "className": "",
+    "icon": "",
+    "payload": "ccw",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 180,
+    "y": 480,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_stop",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base stop",
+    "group": "grp_base",
+    "order": 3,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "STOP",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#c0392b",
+    "className": "",
+    "icon": "",
+    "payload": "stop",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 180,
+    "y": 530,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "btn_base_cw",
+    "type": "ui_button",
+    "z": "tab_arm",
+    "name": "Base cw",
+    "group": "grp_base",
+    "order": 4,
+    "width": "2",
+    "height": "1",
+    "passthru": false,
+    "label": "CW ▶",
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "#2980b9",
+    "className": "",
+    "icon": "",
+    "payload": "cw",
+    "payloadType": "str",
+    "topic": "arm/base",
+    "topicType": "str",
+    "x": 180,
+    "y": 580,
+    "wires": [
+      [
+        "mqtt_out"
+      ]
+    ]
+  },
+  {
+    "id": "in_status",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/status",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 680,
+    "wires": [
+      [
+        "txt_status"
+      ]
+    ]
+  },
+  {
+    "id": "txt_status",
+    "type": "ui_text",
+    "z": "tab_arm",
+    "group": "grp_status",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "ESP32",
+    "label": "ESP32",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#000000",
+    "x": 420,
+    "y": 680,
+    "wires": []
+  },
+  {
+    "id": "in_state",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/state",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 740,
+    "wires": [
+      [
+        "fn_state"
+      ]
+    ]
+  },
+  {
+    "id": "fn_state",
+    "type": "function",
+    "z": "tab_arm",
+    "name": "format angles",
+    "func": "const names = {1:\"Shoulder\",2:\"Elbow\",3:\"Wrist P\",4:\"Wrist R\",5:\"Gripper\"};\nmsg.payload = Object.entries(msg.payload).map(([ch,a]) => `${names[ch]||\"CH\"+ch}: ${a}°`).join(\"  |  \");\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 300,
+    "y": 740,
+    "wires": [
+      [
+        "txt_state"
+      ]
+    ]
+  },
+  {
+    "id": "txt_state",
+    "type": "ui_text",
+    "z": "tab_arm",
+    "group": "grp_status",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "Joint angles",
+    "label": "Angles",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 14,
+    "color": "#000000",
+    "x": 440,
+    "y": 740,
+    "wires": []
+  },
+  {
+    "id": "in_log",
+    "type": "mqtt in",
+    "z": "tab_arm",
+    "name": "",
+    "topic": "arm/log",
+    "qos": "0",
+    "datatype": "auto-detect",
+    "broker": "broker_local",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 800,
+    "wires": [
+      [
+        "txt_log",
+        "debug_log"
+      ]
+    ]
+  },
+  {
+    "id": "txt_log",
+    "type": "ui_text",
+    "z": "tab_arm",
+    "group": "grp_status",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "Last reply",
+    "label": "Last reply",
+    "format": "{{msg.payload}}",
+    "layout": "col-center",
+    "className": "",
+    "style": false,
+    "font": "",
+    "fontSize": 14,
+    "color": "#000000",
+    "x": 440,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "debug_log",
+    "type": "debug",
+    "z": "tab_arm",
+    "name": "arm/log",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 440,
+    "y": 840,
+    "wires": []
+  }
+]

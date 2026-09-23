@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARM-01 Workstation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:       #14181d;
+  --ink-2:     #5b6573;
+  --ink-3:     #8c95a3;
+  --rule:      #d2d7de;
+  --rule-soft: #e7eaee;
+  --panel:     #ffffff;
+  --chrome:    #f5f7f9;
+  --accent:    #0f5fd0;
+  --accent-bg: #e8f0fd;
+  --ok:        #147a48;
+  --warn:      #b2590b;
+  --stop:      #bf2727;
+
+  --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; overflow: hidden;
+  font-family: var(--sans); font-size: 13px; color: var(--ink);
+  background: var(--chrome);
+  display: grid;
+  grid-template-rows: 46px 1fr 28px;
+  grid-template-columns: 1fr 328px;
+  grid-template-areas: "toolbar toolbar" "viewport inspector" "statusbar statusbar";
+}
+
+/* ------------------------------------------------------------- toolbar --- */
+#toolbar {
+  grid-area: toolbar; display: flex; align-items: center; gap: 14px;
+  padding: 0 14px; background: var(--panel); border-bottom: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand .mark {
+  width: 22px; height: 22px; border: 1.5px solid var(--ink); border-radius: 3px;
+  display: grid; place-items: center; flex: none;
+}
+.brand .mark i { width: 8px; height: 8px; border: 1.5px solid var(--ink); border-radius: 50%; }
+.brand b { font-size: 14px; font-weight: 600; letter-spacing: .02em; }
+.brand span { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .05em;
+  padding: 4px 9px; border: 1px solid var(--rule); border-radius: 3px; background: var(--chrome);
+  white-space: nowrap;
+}
+.chip .led { width: 7px; height: 7px; border-radius: 50%; background: var(--stop); flex: none; }
+.chip.on { border-color: #b6dcc6; background: #eefaf3; color: var(--ok); }
+.chip.on .led { background: var(--ok); box-shadow: 0 0 0 3px #14804a22; }
+
+.spacer { flex: 1; }
+
+.field { display: flex; align-items: stretch; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.field label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--ink-3);
+  padding: 0 8px; background: var(--chrome); display: flex; align-items: center;
+  border-right: 1px solid var(--rule);
+}
+.field input {
+  border: 0; outline: 0; font-family: var(--mono); font-size: 12px; color: var(--ink);
+  padding: 6px 9px; width: 124px; background: var(--panel);
+}
+
+button {
+  font-family: var(--sans); font-size: 12px; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 6px 11px; cursor: pointer; white-space: nowrap;
+}
+button:hover { border-color: var(--ink-3); }
+button:active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+button.primary:hover { background: #0d54b8; }
+button.primary:active { background: #0b4aa3; color: #fff; }
+
+/* ------------------------------------------------------------ viewport --- */
+#viewport {
+  grid-area: viewport; position: relative; overflow: hidden;
+  background: radial-gradient(120% 95% at 50% 8%, #fdfdfe 0%, #eef1f5 48%, #dadfe6 100%);
+}
+#viewport canvas { display: block; width: 100%; height: 100%; }
+.vp-tag {
+  position: absolute; font-family: var(--mono); font-size: 10px; letter-spacing: .09em;
+  color: var(--ink-3); text-transform: uppercase; pointer-events: none;
+}
+#vpName { top: 12px; left: 14px; }
+#vpHelp { bottom: 12px; right: 14px; text-align: right; line-height: 1.7; }
+
+/* ----------------------------------------------------------- inspector --- */
+#inspector {
+  grid-area: inspector; background: var(--panel); border-left: 1px solid var(--rule);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.tabs { display: flex; border-bottom: 1px solid var(--rule); flex: none; }
+.tab {
+  flex: 1; border: 0; border-radius: 0; background: var(--chrome);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-2);
+  padding: 11px 0; border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--ink); background: #eef1f4; }
+.tab.is-on { background: var(--panel); color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tab + .tab { border-left: 1px solid var(--rule); }
+
+.pane { overflow-y: auto; padding: 4px 16px 18px; flex: 1; min-height: 0; }
+.pane[hidden] { display: none; }
+
+.group { margin-top: 18px; }
+.group > h2 {
+  margin: 0 0 11px; font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3);
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 6px; border-bottom: 1px solid var(--rule-soft);
+}
+.group > h2 em { font-style: normal; color: var(--ink-2); letter-spacing: .04em; }
+
+.is-locked { opacity: .42; pointer-events: none; }
+
+/* joint rows */
+.jrow { margin-bottom: 13px; }
+.jtop { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.ax { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 600; width: 20px; flex: none; }
+.jtop .nm { flex: 1; font-size: 12px; color: var(--ink-2); letter-spacing: .01em; }
+input.num {
+  width: 58px; text-align: right; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 3px 6px; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink); background: var(--panel);
+}
+input.num:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
+.deg { font-family: var(--mono); font-size: 11px; color: var(--ink-3); width: 10px; flex: none; }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 18px;
+  background: transparent; margin: 0; cursor: pointer; display: block;
+}
+input[type=range]::-webkit-slider-runnable-track { height: 3px; background: var(--rule); border-radius: 2px; }
+input[type=range]::-moz-range-track { height: 3px; background: var(--rule); border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; margin-top: -5px;
+  background: var(--panel); border: 2px solid var(--accent); border-radius: 50%;
+}
+input[type=range]::-moz-range-thumb {
+  width: 13px; height: 13px; background: var(--panel);
+  border: 2px solid var(--accent); border-radius: 50%;
+}
+input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
+
+.btnrow { display: flex; gap: 6px; }
+.btnrow + .btnrow { margin-top: 6px; }
+.btnrow button { flex: 1; padding: 8px 4px; }
+.btnrow button.stop { border-color: #e6b8b8; color: var(--stop); font-weight: 600; }
+.btnrow button.stop:active { background: var(--stop); border-color: var(--stop); color: #fff; }
+
+.banner {
+  border: 1px solid #e9cfa4; background: #fdf6e9; color: var(--warn);
+  border-radius: 3px; padding: 10px 12px; font-size: 12px; line-height: 1.6; margin-top: 16px;
+}
+.banner b { display: block; margin-bottom: 5px; color: #8a4708; }
+.banner code {
+  font-family: var(--mono); font-size: 11px; background: #fff;
+  border: 1px solid #ecd9b5; border-radius: 2px; padding: 1px 5px;
+}
+
+#activity {
+  font-family: var(--mono); font-size: 11px; line-height: 1.75; color: var(--ink-2);
+  max-height: 122px; overflow-y: auto; white-space: pre-wrap;
+}
+
+/* calibration rows */
+.crow { padding: 11px 0; border-bottom: 1px solid var(--rule-soft); }
+.ctop { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ctop .nm { flex: 1; font-size: 12px; color: var(--ink-2); }
+.ctop .val { font-family: var(--mono); font-size: 12px; font-weight: 500; width: 46px; text-align: right; }
+.flip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono);
+  font-size: 10px; letter-spacing: .07em; color: var(--ink-3); cursor: pointer; text-transform: uppercase; }
+.flip input { accent-color: var(--accent); margin: 0; }
+
+/* ---------------------------------------------------------- statusbar --- */
+#statusbar {
+  grid-area: statusbar; display: flex; align-items: stretch;
+  background: var(--panel); border-top: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+}
+#statusbar .cell { padding: 0 13px; border-right: 1px solid var(--rule-soft);
+  display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+#statusbar .cell k { color: var(--ink-3); letter-spacing: .07em; font-weight: 400; }
+#statusbar .cell v { color: var(--ink); font-weight: 500; }
+#statusbar .grow { flex: 1; border-right: 0; }
+#statusbar .cell.alert v { color: var(--stop); }
+
+@media (max-width: 900px) {
+  body { grid-template-columns: 1fr; grid-template-rows: 46px 52vh 1fr 28px;
+         grid-template-areas: "toolbar" "viewport" "inspector" "statusbar"; }
+  #inspector { border-left: 0; border-top: 1px solid var(--rule); }
+  #toolbar { gap: 9px; overflow-x: auto; }
+  .brand span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header id="toolbar">
+  <div class="brand"><span class="mark"><i></i></span><b>ARM-01</b><span>5-DOF / PCA9685</span></div>
+  <span id="linkChip" class="chip"><span class="led"></span><span id="linkText">CONNECTING</span></span>
+  <div class="spacer"></div>
+  <div class="field"><label for="host">BROKER</label><input id="host" value="192.168.1.194" spellcheck="false"></div>
+  <button id="go" class="primary">Connect</button>
+  <button id="resetView">Reset view</button>
+</header>
+
+<main id="viewport">
+  <canvas id="view"></canvas>
+  <div id="vpName" class="vp-tag">Perspective &middot; digital twin</div>
+  <div id="vpHelp" class="vp-tag">drag &mdash; orbit<br>wheel &mdash; zoom<br>right-drag &mdash; pan</div>
+</main>
+
+<aside id="inspector">
+  <nav class="tabs">
+    <button class="tab is-on" data-tab="control">CONTROL</button>
+    <button class="tab" data-tab="calibrate">CALIBRATE</button>
+  </nav>
+
+  <section id="paneControl" class="pane">
+    <div id="offlineBanner" class="banner" hidden>
+      <b>No link to the broker</b>
+      Mosquitto must run with a WebSocket listener:
+      <code>listener 9001 0.0.0.0</code> <code>protocol websockets</code>
+    </div>
+
+    <div class="group">
+      <h2>Joints <em>degrees</em></h2>
+      <div id="jointRows" class="is-locked gated"></div>
+    </div>
+
+    <div class="group">
+      <h2>Gripper <em id="gripState">&mdash;</em></h2>
+      <div class="btnrow is-locked gated">
+        <button data-grip="open">Open</button>
+        <button data-grip="close">Close</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Base <em id="baseState">&mdash;</em></h2>
+      <div class="is-locked gated">
+        <div class="jtop">
+          <span class="ax">SPD</span><span class="nm">rotation speed</span>
+          <input id="baseSpeedNum" class="num" type="number" min="0" max="100" step="5" value="50"><span class="deg">%</span>
+        </div>
+        <input id="baseSpeed" type="range" min="0" max="100" step="5" value="50">
+        <div class="btnrow" style="margin-top:8px">
+          <button data-base="ccw">&#9664; CCW</button>
+          <button data-base="stop" class="stop">Stop</button>
+          <button data-base="cw">CW &#9654;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Stored poses</h2>
+      <div class="is-locked gated">
+        <div class="btnrow"><button data-preset="home">Home</button><button data-preset="rest">Rest</button></div>
+        <div class="btnrow"><button data-preset="pick">Pick</button><button data-preset="place">Place</button></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Demo <em id="demoState">idle</em></h2>
+      <div class="btnrow gated is-locked">
+        <button id="demoRun" class="primary">Run demo</button>
+        <button id="demoStop" class="stop">Stop</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Activity</h2>
+      <div id="activity">waiting for the controller&hellip;</div>
+    </div>
+  </section>
+
+  <section id="paneCalibrate" class="pane" hidden>
+    <div class="group">
+      <h2>Model alignment</h2>
+      <p style="margin:0 0 4px;color:var(--ink-2);line-height:1.65;font-size:12px">
+        The servo-to-linkage angle depends on how each horn is bolted on.
+        <b>Offset</b> rotates a joint in the model; <b>flip</b> reverses its direction.
+        Values are stored in this browser.
+      </p>
+      <div id="calRows"></div>
+      <div class="btnrow" style="margin-top:14px">
+        <button id="calReset">Restore defaults</button>
+        <button id="calCopy">Copy as code</button>
+      </div>
+    </div>
+  </section>
+</aside>
+
+<footer id="statusbar">
+  <span class="cell"><k>BASE</k><v id="sbBase">000.0&deg;</v></span>
+  <span class="cell"><k>SPD</k><v id="sbSpeed">050%</v></span>
+  <span class="cell"><k>GRIP</k><v id="sbGrip">&mdash;</v></span>
+  <span class="cell"><k>TCP&nbsp;Z</k><v id="sbHeight">0.00</v></span>
+  <span class="cell grow"><k>BROKER</k><v id="sbLink">&mdash;</v></span>
+  <span class="cell"><k>FPS</k><v id="sbFps">0</v></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.0/mqtt.min.js"></script>
+<script>
+// A render-loop exception used to leave a blank viewport with no clue why.
+// Report the first one into the Activity panel and the page title.
+let reportedError = null;
+function reportError(err) {
+  if (reportedError) return;
+  reportedError = String((err && err.stack) || err);
+  document.title = "ERROR - ARM-01";
+  const el = document.getElementById("activity");
+  if (el) el.textContent = "SCRIPT ERROR\n" + reportedError + "\n\n" + el.textContent;
+  const vpn = document.getElementById("vpName");
+  if (vpn) { vpn.textContent = "script error - see Activity"; vpn.style.color = "#bf2727"; }
+}
+addEventListener("error", e => reportError(e.error || e.message));
+
+// ===================================================================== config
+// Each joint: which servo channel drives it, and how the 0-180 servo angle maps
+// onto the model.  invert reverses the direction; offset (deg) shifts neutral to
+// match how the horn is physically mounted.  model rotation = (90 - servo) + offset
+const JOINTS = {
+  shoulder:   { ch: 1, axis: "J1", label: "shoulder",    invert: true,  offset: -5 },
+  elbow:      { ch: 2, axis: "J2", label: "elbow",       invert: false, offset: -80 },
+  wristRoll:  { ch: 3, axis: "J3", label: "wrist roll",  invert: true,  offset: -55 },
+  wristPitch: { ch: 4, axis: "J4", label: "wrist pitch", invert: true,  offset: 30 },
+  gripper:    { ch: 5, axis: "J5", label: "gripper",     invert: true,  offset: 15 },
+};
+// CH0 is a continuous-rotation servo: no angle to read back, so its position is
+// integrated from the cw/ccw commands.  Expect drift over time.
+const BASE_CAL = { axis: "J0", label: "base", invert: false, offset: 0 };
+
+// Pose shown before the controller is reachable (HOME_POSE in include/Config.h)
+const REST_POSE = { shoulder: 151, elbow: 153, wristRoll: 54, wristPitch: 57, gripper: 90 };
+const GRIP_OPEN = 20, GRIP_CLOSED = 90;
+
+// Stored poses, keyed by servo channel
+const PRESETS = {
+  rest:  { 1: 90,  2: 90,  3: 90,  4: 90,  5: 90 },
+  pick:  { 1: 120, 2: 60,  3: 40,  4: 90,  5: GRIP_OPEN },
+  place: { 1: 60,  2: 120, 3: 60,  4: 90,  5: GRIP_CLOSED },
+};
+
+// How fast the base turns at 100 % speed. This is an ESTIMATE - the continuous
+// servo reports nothing back. It drives both the model and how long the demo
+// runs the base for, so tuning this one number fixes both at once:
+// if the demo turns the real base too far, raise it; too little, lower it.
+const BASE_DEG_PER_SEC = 90;
+
+// ---- Demo sequence, for showing the arm to an audience.
+// Only the wrist roll, wrist pitch, gripper and base move; the shoulder and
+// elbow are left exactly where they are, so the arm cannot fold onto the table.
+// The wrist and gripper run at normal speed. ONLY THE BASE is slowed down, and
+// it always sweeps out and straight back, so it finishes where it started.
+const DEMO = {
+  jointPauseSeconds: 1.2,   // wait after each wrist/gripper command
+  baseSweepDeg:      20,    // how far the base turns before coming back
+  baseSpeedPct:      30,    // base speed during the demo - lower is slower
+  baseHoldSeconds:   1.0,   // pause at +20 deg before returning
+  loop:              true,  // repeat until Stop is pressed
+  steps: [
+    { joint: "gripper",    to: GRIP_OPEN,   say: "open the gripper" },
+    { joint: "wristPitch", to: 87,          say: "wrist pitch up" },
+    { joint: "wristPitch", to: 27,          say: "wrist pitch down" },
+    { joint: "wristPitch", to: 57,          say: "wrist pitch centre" },
+    { joint: "wristRoll",  to: 84,          say: "wrist roll right" },
+    { joint: "wristRoll",  to: 24,          say: "wrist roll left" },
+    { joint: "wristRoll",  to: 54,          say: "wrist roll centre" },
+    { joint: "gripper",    to: GRIP_CLOSED, say: "close the gripper" },
+    { baseSweep: true,                      say: "base +20 deg, then back" },
+    { joint: "gripper",    to: GRIP_OPEN,   say: "open the gripper" },
+  ],
+};
+
+const SMOOTH = 0.18;           // model easing toward the reported angle, 0..1
+
+// ==================================================================== 3d scene
+const vp = document.getElementById("viewport");
+const canvas = document.getElementById("view");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);          // the CSS gradient shows through
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.autoClear = false;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 120);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xc3cbd6, 0.85));
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+keyLight.position.set(5.5, 9, 4.5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.left = keyLight.shadow.camera.bottom = -8;
+keyLight.shadow.camera.right = keyLight.shadow.camera.top = 8;
+keyLight.shadow.radius = 3;
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0xdfe8f5, 0.35);
+fillLight.position.set(-6, 4, -5);
+scene.add(fillLight);
+
+// contact shadow only - the studio gradient stays visible underneath
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: 0.17 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(16, 32, 0xaab2bd, 0xd2d8e0);
+grid.material.transparent = true;
+grid.material.opacity = 0.55;
+grid.position.y = 0.001;
+scene.add(grid);
+
+// ----------------------------------------------------------------- materials
+const matLink   = new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 0.55, metalness: 0.12 });
+const matBlack  = new THREE.MeshStandardMaterial({ color: 0x24282e, roughness: 0.68, metalness: 0.1 });
+const matMetal  = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, roughness: 0.3,  metalness: 0.85 });
+const matServo  = new THREE.MeshStandardMaterial({ color: 0x1b1e23, roughness: 0.45, metalness: 0.2 });
+const matAccent = new THREE.MeshStandardMaterial({ color: 0x0f5fd0, roughness: 0.4,  metalness: 0.15 });
+
+function box(w, h, d, mat) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function cyl(r, h, mat, seg = 28) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+/** A flat printed plate along +Y with rounded ends. Pivot sits at the lower cap centre. */
+function plate(len, width, thick, mat) {
+  const g = new THREE.Group();
+  const bar = box(width, len, thick, mat);
+  bar.position.y = len / 2;
+  g.add(bar);
+  for (const y of [0, len]) {
+    const cap = cyl(width / 2, thick, mat, 24);
+    cap.rotation.x = Math.PI / 2;
+    cap.position.y = y;
+    g.add(cap);
+  }
+  return g;
+}
+/** Two parallel plates - the fork/yoke shape these kits are printed in. */
+function fork(len, width, thick, gap, mat) {
+  const g = new THREE.Group();
+  for (const z of [-gap / 2, gap / 2]) {
+    const side = plate(len, width, thick, mat);
+    side.position.z = z;
+    g.add(side);
+  }
+  return g;
+}
+function screw(x, y, z, r = 0.045) {
+  const m = cyl(r, 0.06, matMetal, 12);
+  m.rotation.x = Math.PI / 2;
+  m.position.set(x, y, z);
+  return m;
+}
+function servo() {
+  const g = new THREE.Group();
+  g.add(box(0.42, 0.22, 0.46, matServo));
+  const top = box(0.42, 0.06, 0.46, matAccent);
+  top.position.y = 0.14;
+  g.add(top);
+  const horn = cyl(0.09, 0.1, matMetal, 16);
+  horn.rotation.x = Math.PI / 2;
+  horn.position.set(0.12, 0, 0.26);
+  g.add(horn);
+  return g;
+}
+
+// --------------------------------------------- kinematic chain (bottom -> up)
+const UPPER_LEN = 1.85, FORE_LEN = 1.45, WRIST_LEN = 0.42;
+
+const flange = cyl(1.12, 0.1, matBlack, 48);
+flange.position.y = 0.05;
+scene.add(flange);
+for (let i = 0; i < 6; i++) {
+  const a = (i / 6) * Math.PI * 2;
+  scene.add(screw(Math.cos(a) * 0.96, 0.11, Math.sin(a) * 0.96, 0.05));
+}
+const pedestal = cyl(0.82, 0.8, matBlack, 48);
+pedestal.position.y = 0.45;
+scene.add(pedestal);
+
+const baseYaw = new THREE.Group();
+baseYaw.position.y = 0.85;
+scene.add(baseYaw);
+
+const turntable = cyl(0.86, 0.14, matLink, 48);
+turntable.position.y = 0.07;
+baseYaw.add(turntable);
+
+const shoulderYoke = fork(0.58, 0.46, 0.12, 0.6, matLink);
+shoulderYoke.position.y = 0.14;
+baseYaw.add(shoulderYoke);
+const shoulderServo = servo();
+shoulderServo.position.set(0, 0.36, 0);
+baseYaw.add(shoulderServo);
+
+const shoulder = new THREE.Group();
+shoulder.position.y = 0.72;
+baseYaw.add(shoulder);
+shoulder.add(fork(UPPER_LEN, 0.42, 0.12, 0.5, matLink));
+shoulder.add(screw(0, 0, 0.3), screw(0, 0, -0.3));
+
+const elbow = new THREE.Group();
+elbow.position.y = UPPER_LEN;
+shoulder.add(elbow);
+const elbowServo = servo();
+elbowServo.position.set(0, 0.16, 0);
+elbow.add(elbowServo);
+elbow.add(plate(FORE_LEN, 0.46, 0.44, matBlack));
+elbow.add(screw(0, 0, 0.24), screw(0, 0, -0.24));
+
+const wristPitch = new THREE.Group();
+wristPitch.position.y = FORE_LEN;
+elbow.add(wristPitch);
+const wristServo = servo();
+wristServo.scale.setScalar(0.8);
+wristServo.position.set(0, 0.1, 0);
+wristPitch.add(wristServo);
+wristPitch.add(fork(WRIST_LEN, 0.34, 0.11, 0.38, matLink));
+
+const wristRoll = new THREE.Group();
+wristRoll.position.y = WRIST_LEN;
+wristPitch.add(wristRoll);
+const rollHub = cyl(0.19, 0.12, matLink, 24);
+rollHub.position.y = 0.06;
+wristRoll.add(rollHub);
+
+const gripperBase = new THREE.Group();
+gripperBase.position.y = 0.12;
+wristRoll.add(gripperBase);
+const palm = box(0.5, 0.12, 0.3, matLink);
+palm.position.y = 0.06;
+gripperBase.add(palm);
+const gripServo = servo();
+gripServo.scale.setScalar(0.62);
+gripServo.position.set(0, 0.04, -0.2);
+gripperBase.add(gripServo);
+
+function finger(side) {
+  const g = new THREE.Group();
+  const gear = cyl(0.13, 0.05, matLink, 20);
+  gear.rotation.x = Math.PI / 2;
+  g.add(gear, screw(0, 0, 0.05, 0.035));
+  g.add(plate(0.46, 0.12, 0.16, matBlack));
+  const tip = plate(0.3, 0.11, 0.16, matBlack);
+  tip.position.y = 0.46;
+  tip.rotation.z = -side * 0.42;
+  g.add(tip);
+  return g;
+}
+const fingerL = finger(-1), fingerR = finger(+1);
+fingerL.position.set(-0.16, 0.12, 0);
+fingerR.position.set(0.16, 0.12, 0);
+gripperBase.add(fingerL, fingerR);
+
+const tcp = new THREE.Object3D();           // tool centre point, for the Z readout
+tcp.position.y = 0.78;
+gripperBase.add(tcp);
+
+// ------------------------------------------------------------- axis gizmo ---
+const gizmoScene = new THREE.Scene();
+const gizmoCam = new THREE.OrthographicCamera(-1.8, 1.8, 1.8, -1.8, 0.1, 20);
+function axisArrow(dir, color) {
+  const mat = new THREE.MeshBasicMaterial({ color });
+  const g = new THREE.Group();
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.05, 10), mat);
+  shaft.position.y = 0.52;
+  const head = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.28, 14), mat);
+  head.position.y = 1.16;
+  g.add(shaft, head);
+  if (dir === "x") g.rotation.z = -Math.PI / 2;
+  if (dir === "z") g.rotation.x = Math.PI / 2;
+  return g;
+}
+gizmoScene.add(axisArrow("x", 0xc0392b), axisArrow("y", 0x2e7d43), axisArrow("z", 0x2e5fb8));
+
+// ================================================================ orbit camera
+const HOME_VIEW = { theta: 0.85, phi: 1.12, dist: 9.5, target: new THREE.Vector3(0, 2.1, 0) };
+let camTheta = HOME_VIEW.theta, camPhi = HOME_VIEW.phi, camDist = HOME_VIEW.dist;
+const camTarget = HOME_VIEW.target.clone();
+
+function updateCamera() {
+  camPhi = Math.max(0.12, Math.min(Math.PI / 2 - 0.02, camPhi));
+  camDist = Math.max(3.5, Math.min(24, camDist));
+  camera.position.set(
+    camTarget.x + camDist * Math.sin(camPhi) * Math.cos(camTheta),
+    camTarget.y + camDist * Math.cos(camPhi),
+    camTarget.z + camDist * Math.sin(camPhi) * Math.sin(camTheta)
+  );
+  camera.lookAt(camTarget);
+}
+let drag = null;
+canvas.addEventListener("pointerdown", e => {
+  drag = { x: e.clientX, y: e.clientY, btn: e.button };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener("pointerup", e => { drag = null; canvas.releasePointerCapture(e.pointerId); });
+canvas.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.btn === 2) {
+    camTarget.x -= dx * 0.006 * Math.cos(camTheta) - dy * 0.004 * Math.sin(camTheta);
+    camTarget.y += dy * 0.008;
+  } else {
+    camTheta += dx * 0.007;
+    camPhi -= dy * 0.007;
+  }
+  updateCamera();
+});
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  camDist *= 1 + Math.sign(e.deltaY) * 0.1;
+  updateCamera();
+}, { passive: false });
+canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+document.getElementById("resetView").onclick = () => {
+  camTheta = HOME_VIEW.theta; camPhi = HOME_VIEW.phi; camDist = HOME_VIEW.dist;
+  camTarget.copy(HOME_VIEW.target);
+  updateCamera();
+};
+
+function resize() {
+  const w = vp.clientWidth, h = vp.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(vp);
+resize();
+updateCamera();
+
+// ================================================================== arm state
+const target = { ...REST_POSE };
+const shown = { ...target };
+let baseAngleDeg = 0, baseDir = 0, baseSpeedPct = 50;
+
+const rad = d => d * Math.PI / 180;
+const jointRad = (name, deg) =>
+  rad((90 - deg) * (JOINTS[name].invert ? -1 : 1) + JOINTS[name].offset);
+
+const worldTmp = new THREE.Vector3();
+let lastFrame = performance.now(), fpsAccum = 0, fpsFrames = 0;
+
+function animate(now) {
+  requestAnimationFrame(animate);
+  try { frame(now); } catch (err) { reportError(err); }
+}
+
+function frame(now) {
+  const dt = Math.min((now - lastFrame) / 1000, 0.1);
+  lastFrame = now;
+
+  for (const k in shown) shown[k] += (target[k] - shown[k]) * SMOOTH;
+
+  baseAngleDeg += baseDir * BASE_DEG_PER_SEC * (baseSpeedPct / 100) * dt;
+  baseYaw.rotation.y = rad(-baseAngleDeg * (BASE_CAL.invert ? -1 : 1) + BASE_CAL.offset);
+
+  shoulder.rotation.z   = jointRad("shoulder",   shown.shoulder);
+  elbow.rotation.z      = jointRad("elbow",      shown.elbow);
+  wristPitch.rotation.z = jointRad("wristPitch", shown.wristPitch);
+  wristRoll.rotation.y  = jointRad("wristRoll",  shown.wristRoll);
+
+  let t = Math.max(0, Math.min(1, (shown.gripper - GRIP_OPEN) / (GRIP_CLOSED - GRIP_OPEN)));
+  if (JOINTS.gripper.invert) t = 1 - t;        // jaws opposite to the real claw
+  const jaw = 0.44 * (1 - t);
+  fingerL.rotation.z = jaw;
+  fingerR.rotation.z = -jaw;
+
+  render();
+  refreshReadouts();
+
+  fpsAccum += dt; fpsFrames++;
+  if (fpsAccum >= 0.5) {
+    sbFps.textContent = Math.round(fpsFrames / fpsAccum);
+    fpsAccum = 0; fpsFrames = 0;
+  }
+}
+
+function render() {
+  const w = vp.clientWidth, h = vp.clientHeight;
+  renderer.setScissorTest(false);
+  renderer.setViewport(0, 0, w, h);
+  renderer.clear();
+  renderer.render(scene, camera);
+
+  const s = 78, m = 14;                       // axis gizmo, bottom-left of the viewport
+  renderer.setViewport(m, m, s, s);
+  renderer.setScissor(m, m, s, s);
+  renderer.setScissorTest(true);
+  renderer.clearDepth();
+  gizmoCam.position.copy(camera.position).sub(camTarget).setLength(6);
+  gizmoCam.lookAt(0, 0, 0);
+  renderer.render(gizmoScene, gizmoCam);
+  renderer.setScissorTest(false);
+}
+
+// ========================================================== inspector wiring
+const linkChip = document.getElementById("linkChip");
+const linkText = document.getElementById("linkText");
+const offlineBanner = document.getElementById("offlineBanner");
+const activityEl = document.getElementById("activity");
+const gripStateEl = document.getElementById("gripState");
+const baseStateEl = document.getElementById("baseState");
+const sbBase = document.getElementById("sbBase");
+const sbSpeed = document.getElementById("sbSpeed");
+const sbGrip = document.getElementById("sbGrip");
+const sbHeight = document.getElementById("sbHeight");
+const sbLink = document.getElementById("sbLink");
+const sbFps = document.getElementById("sbFps");
+const gatedEls = [...document.querySelectorAll(".gated")];
+
+function pub(topic, payload) {
+  if (client && client.connected) client.publish(topic, String(payload));
+}
+const pad = (n, w = 5) => n.toFixed(1).padStart(w, "0");
+
+// ---- joint rows: each shows the live angle and commands the arm
+const jointUI = {};
+const jointRows = document.getElementById("jointRows");
+for (const [name, j] of Object.entries(JOINTS)) {
+  const row = document.createElement("div");
+  row.className = "jrow";
+  row.innerHTML =
+    '<div class="jtop">' +
+      '<span class="ax">' + j.axis + '</span><span class="nm">' + j.label + '</span>' +
+      '<input class="num" type="number" min="0" max="180" step="1" value="' + Math.round(target[name]) + '">' +
+      '<span class="deg">&deg;</span>' +
+    '</div>' +
+    '<input type="range" min="0" max="180" step="1" value="' + Math.round(target[name]) + '">';
+  const slider = row.querySelector("input[type=range]");
+  const num = row.querySelector("input.num");
+  const ui = { slider, num, dragging: false, typing: false, lastSent: 0 };
+  jointUI[name] = ui;
+
+  const push = force => {
+    const t = performance.now();
+    if (!force && t - ui.lastSent < 100) return;      // ~10 commands/s while dragging
+    ui.lastSent = t;
+    pub("arm/servo/" + j.ch, slider.value);
+  };
+  slider.addEventListener("pointerdown", () => { ui.dragging = true; });
+  slider.addEventListener("pointerup", () => { ui.dragging = false; push(true); });
+  slider.addEventListener("input", () => {
+    target[name] = Number(slider.value);
+    num.value = slider.value;
+    push(false);
+  });
+  slider.addEventListener("change", () => push(true));
+
+  num.addEventListener("focus", () => { ui.typing = true; });
+  num.addEventListener("blur", () => { ui.typing = false; });
+  num.addEventListener("change", () => {
+    const v = Math.max(0, Math.min(180, Math.round(Number(num.value) || 0)));
+    num.value = v; slider.value = v; target[name] = v;
+    pub("arm/servo/" + j.ch, v);
+  });
+  jointRows.appendChild(row);
+}
+
+document.querySelectorAll("[data-grip]").forEach(b => {
+  b.onclick = () => pub("arm/servo/" + JOINTS.gripper.ch, b.dataset.grip === "open" ? GRIP_OPEN : GRIP_CLOSED);
+});
+document.querySelectorAll("[data-base]").forEach(b => {
+  b.onclick = () => pub("arm/base", b.dataset.base);
+});
+document.querySelectorAll("[data-preset]").forEach(b => {
+  b.onclick = () => {
+    const name = b.dataset.preset;
+    if (name === "home") { pub("arm/home", 1); return; }
+    const pose = PRESETS[name];
+    if (pose) for (const [ch, deg] of Object.entries(pose)) pub("arm/servo/" + ch, deg);
+  };
+});
+
+const baseSpeedEl = document.getElementById("baseSpeed");
+const baseSpeedNum = document.getElementById("baseSpeedNum");
+function setSpeedUI(v) { baseSpeedEl.value = v; baseSpeedNum.value = v; baseSpeedPct = Number(v); }
+baseSpeedEl.addEventListener("input", () => setSpeedUI(baseSpeedEl.value));
+baseSpeedEl.addEventListener("change", () => pub("arm/base/speed", baseSpeedEl.value));
+baseSpeedNum.addEventListener("change", () => {
+  const v = Math.max(0, Math.min(100, Math.round(Number(baseSpeedNum.value) || 0)));
+  setSpeedUI(v);
+  pub("arm/base/speed", v);
+});
+
+// ---- tabs
+document.querySelectorAll(".tab").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("is-on", x === t));
+    document.getElementById("paneControl").hidden = t.dataset.tab !== "control";
+    document.getElementById("paneCalibrate").hidden = t.dataset.tab !== "calibrate";
+  };
+});
+
+// ---- per-frame readouts
+function refreshReadouts() {
+  for (const name in jointUI) {
+    const ui = jointUI[name];
+    const deg = Math.round(target[name]);
+    if (!ui.dragging) ui.slider.value = deg;
+    if (!ui.dragging && !ui.typing) ui.num.value = deg;
+  }
+  const dirWord = baseDir > 0 ? "CW" : baseDir < 0 ? "CCW" : "idle";
+  const stalled = baseDir !== 0 && baseSpeedPct === 0;
+  const deg = ((baseAngleDeg % 360) + 360) % 360;
+
+  baseStateEl.textContent = stalled ? "commanded, speed 0" : dirWord;
+  baseStateEl.style.color = stalled ? "var(--stop)" : "";
+  sbBase.textContent = pad(deg) + "°" + (baseDir ? (baseDir > 0 ? " ↻" : " ↺") : "");
+  sbSpeed.textContent = String(Math.round(baseSpeedPct)).padStart(3, "0") + "%";
+  sbSpeed.parentElement.classList.toggle("alert", stalled);
+
+  const closed = shown.gripper > (GRIP_OPEN + GRIP_CLOSED) / 2;
+  gripStateEl.textContent = closed ? "closed" : "open";
+  sbGrip.textContent = closed ? "CLOSED" : "OPEN";
+
+  tcp.getWorldPosition(worldTmp);
+  sbHeight.textContent = worldTmp.y.toFixed(2);
+}
+
+// ================================================================ demo mode
+// Wrist and gripper moves are sent as a single setpoint and run at the arm's
+// normal speed. The base is the only axis deliberately slowed, and it always
+// returns to the angle it started from.
+const demoStateEl = document.getElementById("demoState");
+let demoToken = 0;                       // bumping this cancels a running demo
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/** sleep that gives up early when the demo is cancelled */
+async function waitWhile(ms, alive) {
+  const end = performance.now() + ms;
+  while (alive() && performance.now() < end) await sleep(40);
+}
+
+/** One wrist / gripper move: normal speed, just send the setpoint. */
+async function moveJoint(name, to, alive) {
+  target[name] = to;
+  pub("arm/servo/" + JOINTS[name].ch, to);
+  await waitWhile(DEMO.jointPauseSeconds * 1000, alive);
+}
+
+/** Base: out by baseSweepDeg, hold, then the same amount back to the start. */
+async function sweepBaseAndReturn(alive) {
+  const rate = BASE_DEG_PER_SEC * (DEMO.baseSpeedPct / 100);   // degrees per second
+  const runMs = (DEMO.baseSweepDeg / Math.max(rate, 1)) * 1000;
+
+  setSpeedUI(DEMO.baseSpeedPct);
+  pub("arm/base/speed", DEMO.baseSpeedPct);
+  await sleep(120);                       // let the speed land before moving
+
+  for (const dir of ["cw", "ccw"]) {
+    if (!alive()) return;
+    demoStateEl.textContent = dir === "cw" ? "base +" + DEMO.baseSweepDeg + " deg"
+                                           : "base back to start";
+    pub("arm/base", dir);
+    await waitWhile(runMs, alive);
+    pub("arm/base", "stop");              // sent even when cancelled mid-run
+    if (dir === "cw") await waitWhile(DEMO.baseHoldSeconds * 1000, alive);
+  }
+}
+
+function stopDemo(reason) {
+  demoToken++;                            // invalidates any running sequence
+  pub("arm/base", "stop");
+  demoStateEl.textContent = reason || "stopped";
+  demoStateEl.style.color = "";
+}
+
+async function runDemo() {
+  if (!client || !client.connected) { addLog("demo needs a broker link"); return; }
+  const my = ++demoToken;
+  const alive = () => my === demoToken;
+  addLog("demo started");
+  demoStateEl.style.color = "var(--accent)";
+
+  try {
+    do {
+      for (let i = 0; i < DEMO.steps.length; i++) {
+        if (!alive()) return;
+        const step = DEMO.steps[i];
+        demoStateEl.textContent = (i + 1) + "/" + DEMO.steps.length + "  " + step.say;
+        if (step.baseSweep) await sweepBaseAndReturn(alive);
+        else await moveJoint(step.joint, step.to, alive);
+      }
+    } while (DEMO.loop && alive());
+  } finally {
+    if (alive()) { pub("arm/base", "stop"); stopDemo("finished"); addLog("demo finished"); }
+  }
+}
+
+document.getElementById("demoRun").onclick = runDemo;
+document.getElementById("demoStop").onclick = () => { stopDemo("stopped"); addLog("demo stopped"); };
+// never leave the base spinning if the page is closed or the link drops
+addEventListener("beforeunload", () => stopDemo());
+
+const logLines = [];
+function addLog(text) {
+  logLines.unshift(new Date().toLocaleTimeString() + "  " + text);
+  if (logLines.length > 40) logLines.pop();
+  activityEl.textContent = logLines.join("\n");
+}
+
+function setStatus(ok, text, showHelp) {
+  linkChip.classList.toggle("on", ok);
+  linkText.textContent = text.toUpperCase();
+  sbLink.textContent = text;
+  gatedEls.forEach(el => el.classList.toggle("is-locked", !ok));
+  offlineBanner.hidden = !showHelp;
+}
+
+// ============================================================== calibration
+const CAL_KEY = "arm3d-calibration-v3";
+const CAL_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(
+  [...Object.entries(JOINTS), ["base", BASE_CAL]].map(([k, v]) => [k, { invert: v.invert, offset: v.offset }]))));
+
+try {
+  const saved = JSON.parse(localStorage.getItem(CAL_KEY) || "{}");
+  for (const name in saved) {
+    if (name === "base") Object.assign(BASE_CAL, saved.base);
+    else if (JOINTS[name]) Object.assign(JOINTS[name], saved[name]);
+  }
+} catch (e) { /* unreadable storage - fall back to the defaults above */ }
+
+function saveCal() {
+  const out = {};
+  for (const [name, j] of Object.entries(JOINTS)) out[name] = { invert: j.invert, offset: j.offset };
+  out.base = { invert: BASE_CAL.invert, offset: BASE_CAL.offset };
+  try { localStorage.setItem(CAL_KEY, JSON.stringify(out)); } catch (e) { /* private mode */ }
+}
+
+const calRows = document.getElementById("calRows");
+const calUI = {};
+for (const [name, j] of [...Object.entries(JOINTS), ["base", BASE_CAL]]) {
+  const row = document.createElement("div");
+  row.className = "crow";
+  row.innerHTML =
+    '<div class="ctop">' +
+      '<span class="ax">' + j.axis + '</span>' +
+      '<span class="nm">' + j.label + '</span>' +
+      '<label class="flip"><input type="checkbox"' + (j.invert ? " checked" : "") + '>flip</label>' +
+      '<span class="val">' + j.offset + '&deg;</span>' +
+    '</div>' +
+    '<input type="range" min="-180" max="180" step="5" value="' + j.offset + '">';
+  const chk = row.querySelector("input[type=checkbox]");
+  const slider = row.querySelector("input[type=range]");
+  const out = row.querySelector(".val");
+  slider.oninput = () => { j.offset = Number(slider.value); out.innerHTML = j.offset + "&deg;"; saveCal(); };
+  chk.onchange = () => { j.invert = chk.checked; saveCal(); };
+  calUI[name] = { chk, slider, out, j };
+  calRows.appendChild(row);
+}
+
+document.getElementById("calReset").onclick = () => {
+  for (const [name, ui] of Object.entries(calUI)) {
+    const d = CAL_DEFAULTS[name];
+    ui.j.offset = d.offset; ui.j.invert = d.invert;
+    ui.slider.value = d.offset; ui.chk.checked = d.invert;
+    ui.out.innerHTML = d.offset + "&deg;";
+  }
+  saveCal();
+  addLog("calibration restored to the built-in defaults");
+};
+document.getElementById("calCopy").onclick = () => {
+  const lines = Object.entries(JOINTS).map(([n, j]) =>
+    "  " + (n + ":").padEnd(12) + "{ ch: " + j.ch + ', axis: "' + j.axis + '", label: "' + j.label +
+    '", invert: ' + j.invert + ", offset: " + j.offset + " },");
+  const text = "const JOINTS = {\n" + lines.join("\n") + "\n};\n" +
+    'const BASE_CAL = { axis: "J0", label: "base", invert: ' + BASE_CAL.invert + ", offset: " + BASE_CAL.offset + " };";
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => addLog("calibration copied to the clipboard"))
+      .catch(() => addLog("clipboard blocked:\n" + text));
+  } else {
+    addLog(text);
+  }
+};
+
+// ====================================================================== MQTT
+let client = null;
+function connect(host) {
+  if (client) { try { client.end(true); } catch (e) {} }
+  setStatus(false, "connecting", false);
+  try { localStorage.setItem("arm3d-host", host); } catch (e) { /* ignore */ }
+
+  client = mqtt.connect("ws://" + host + ":9001", {
+    clientId: "arm3d-" + Math.random().toString(16).slice(2, 8),
+    reconnectPeriod: 4000, connectTimeout: 6000,
+  });
+
+  client.on("connect", () => {
+    setStatus(true, "linked", false);
+    client.subscribe(["arm/state", "arm/status", "arm/log", "arm/base", "arm/base/speed"]);
+    pub("arm/base/speed", baseSpeedEl.value);
+    addLog("broker link established (" + host + ":9001)");
+  });
+
+  client.on("message", (topic, buf) => {
+    const payload = buf.toString();
+    if (topic === "arm/state") {
+      let s;
+      try { s = JSON.parse(payload); } catch (e) { return; }
+      for (const [name, j] of Object.entries(JOINTS)) {
+        if (s[j.ch] !== undefined && !jointUI[name].dragging) target[name] = Number(s[j.ch]);
+      }
+      setStatus(true, "linked", false);
+    } else if (topic === "arm/status") {
+      setStatus(payload === "online", payload === "online" ? "linked" : "controller offline", false);
+    } else if (topic === "arm/base") {
+      baseDir = payload === "cw" ? 1 : payload === "ccw" ? -1 : 0;
+    } else if (topic === "arm/base/speed") {
+      setSpeedUI(Number(payload));
+    } else if (topic === "arm/log") {
+      addLog(payload);
+    }
+  });
+
+  client.on("error", () => { stopDemo("link lost"); setStatus(false, "link error", true); });
+  client.on("close", () => { stopDemo("link lost"); setStatus(false, "no link", true); });
+}
+
+const hostInput = document.getElementById("host");
+hostInput.value = new URLSearchParams(location.search).get("host")
+  || (function () { try { return localStorage.getItem("arm3d-host"); } catch (e) { return null; } })()
+  || (location.hostname && location.protocol !== "file:" ? location.hostname : "192.168.1.194");
+document.getElementById("go").onclick = () => connect(hostInput.value.trim());
+hostInput.addEventListener("keydown", e => { if (e.key === "Enter") connect(hostInput.value.trim()); });
+
+requestAnimationFrame(animate);
+connect(hostInput.value.trim());
+</script>
+</body>
+</html>
