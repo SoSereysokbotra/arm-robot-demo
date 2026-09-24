@@ -297,6 +297,37 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
         Values are stored in this browser.
       </p>
       <div id="calRows"></div>
+
+      <div class="crow" style="border-bottom:0">
+        <div class="ctop">
+          <span class="ax">J0</span>
+          <span class="nm">base speed at 100 %</span>
+          <input id="baseRateNum" class="num" type="number" min="2" max="360" step="1" value="15">
+          <span class="deg" style="width:34px">&deg;/s</span>
+        </div>
+        <input id="baseRate" type="range" min="2" max="360" step="1" value="15">
+        <p style="margin:8px 0 0;color:var(--ink-3);line-height:1.6;font-size:11px">
+          Lower this if the model&rsquo;s base spins faster than the real one.
+          To measure: set speed 100 %, hold CW for 10 s, note how far the real
+          base turned, and enter that figure divided by 10.
+        </p>
+      </div>
+
+      <div class="crow" style="border-top:1px solid var(--rule-soft);border-bottom:0">
+        <div class="ctop">
+          <span class="ax">J0</span>
+          <span class="nm">base trim (real servo)</span>
+          <input id="baseTrimNum" class="num" type="number" min="240" max="380" step="1" value="307">
+          <span class="deg" style="width:34px">cnt</span>
+        </div>
+        <input id="baseTrim" type="range" min="240" max="380" step="1" value="307">
+        <p style="margin:8px 0 0;color:var(--ink-3);line-height:1.6;font-size:11px">
+          Balances the real base&rsquo;s two directions. <b>Raise</b> it to make CW
+          faster and CCW slower; <b>lower</b> it for the opposite. Sent to the
+          controller, which forgets it on reboot &mdash; the app resends on connect.
+        </p>
+      </div>
+
       <div class="btnrow" style="margin-top:14px">
         <button id="calReset">Restore defaults</button>
         <button id="calCopy">Copy as code</button>
@@ -357,11 +388,11 @@ const PRESETS = {
   place: { 1: 60,  2: 120, 3: 60,  4: 90,  5: GRIP_CLOSED },
 };
 
-// How fast the base turns at 100 % speed. This is an ESTIMATE - the continuous
-// servo reports nothing back. It drives both the model and how long the demo
-// runs the base for, so tuning this one number fixes both at once:
-// if the demo turns the real base too far, raise it; too little, lower it.
-const BASE_DEG_PER_SEC = 90;
+// How fast the real base turns at 100 % speed. The continuous servo reports
+// nothing back, so this has to be measured. It drives both how fast the model
+// spins and how long the demo runs the base for. Tune it live in the
+// CALIBRATE tab ("base speed"); the value is stored with the calibration.
+let baseDegPerSec = 15;
 
 // ---- Demo sequence, for showing the arm to an audience.
 // Only the wrist roll, wrist pitch, gripper and base move; the shoulder and
@@ -373,6 +404,10 @@ const DEMO = {
   baseSweepDeg:      20,    // how far the base turns before coming back
   baseSpeedPct:      30,    // base speed during the demo - lower is slower
   baseHoldSeconds:   1.0,   // pause at +20 deg before returning
+  // Continuous servos rarely run at the same speed both ways, so the same
+  // run-time covers a different angle. If the base does not come all the way
+  // back, raise this; if it goes past the start, lower it. 1.0 = equal times.
+  returnFactor:      1.0,
   loop:              true,  // repeat until Stop is pressed
   steps: [
     { joint: "gripper",    to: GRIP_OPEN,   say: "open the gripper" },
@@ -552,33 +587,73 @@ wristRoll.add(rollHub);
 const gripperBase = new THREE.Group();
 gripperBase.position.y = 0.12;
 wristRoll.add(gripperBase);
-const palm = box(0.5, 0.12, 0.3, matLink);
-palm.position.y = 0.06;
+
+// mounting bracket the whole claw bolts to
+const palm = box(0.62, 0.11, 0.3, matBlack);
+palm.position.y = 0.055;
 gripperBase.add(palm);
+gripperBase.add(screw(-0.24, 0.055, 0.16, 0.04), screw(0.24, 0.055, 0.16, 0.04));
 const gripServo = servo();
 gripServo.scale.setScalar(0.62);
-gripServo.position.set(0, 0.04, -0.2);
+gripServo.position.set(0, 0.03, -0.22);
 gripperBase.add(gripServo);
 
-function finger(side) {
+/** A toothed disc lying in the XY plane - the meshing pair at the claw's root. */
+function gearDisc(r, thick, teeth) {
   const g = new THREE.Group();
-  const gear = cyl(0.13, 0.05, matLink, 20);
-  gear.rotation.x = Math.PI / 2;
-  g.add(gear, screw(0, 0, 0.05, 0.035));
-  g.add(plate(0.46, 0.12, 0.16, matBlack));
-  const tip = plate(0.3, 0.11, 0.16, matBlack);
-  tip.position.y = 0.46;
-  tip.rotation.z = -side * 0.42;
-  g.add(tip);
+  const body = cyl(r, thick, matBlack, 26);
+  body.rotation.x = Math.PI / 2;
+  g.add(body);
+  for (let i = 0; i < teeth; i++) {
+    const a = (i / teeth) * Math.PI * 2;
+    const tooth = box(0.032, 0.055, thick, matBlack);
+    tooth.position.set(Math.cos(a) * (r + 0.02), Math.sin(a) * (r + 0.02), 0);
+    tooth.rotation.z = a - Math.PI / 2;
+    g.add(tooth);
+  }
   return g;
 }
-const fingerL = finger(-1), fingerR = finger(+1);
-fingerL.position.set(-0.16, 0.12, 0);
-fingerR.position.set(0.16, 0.12, 0);
+
+// One side of a parallel-linkage claw. The group pivots at the gear; the jaw is
+// a child that counter-rotates, which is what the parallelogram does mechanically
+// - the jaw stays upright however far the claw opens.
+function claw(side) {                       // side: -1 left, +1 right
+  const g = new THREE.Group();
+  g.add(gearDisc(0.135, 0.07, 14));
+  g.add(screw(0, 0, 0.055, 0.042));
+
+  const PROX = 0.52;
+  g.add(plate(PROX, 0.11, 0.13, matBlack));              // main arm
+  // Inner coupler bar: sits outboard at its base and leans in at the top, so the
+  // pair form a /\ that meets near the centre - not a V opening upward.
+  const coupler = plate(PROX - 0.06, 0.07, 0.09, matBlack);
+  coupler.position.set(side * 0.06, 0.03, 0);
+  coupler.rotation.z = side * 0.30;
+  g.add(coupler);
+  g.add(screw(0, PROX, 0.08, 0.042));
+
+  const jaw = new THREE.Group();
+  jaw.position.y = PROX;
+  g.add(jaw);
+  jaw.add(plate(0.44, 0.1, 0.12, matBlack));             // straight part of the jaw
+  const hook = plate(0.28, 0.09, 0.12, matBlack);        // tip hooks INWARD to grip
+  hook.position.y = 0.44;
+  hook.rotation.z = side * 0.55;
+  jaw.add(hook);
+  jaw.add(screw(0, 0, 0.075, 0.036), screw(0, 0.44, 0.075, 0.036));
+
+  return { group: g, jaw };
+}
+
+const clawL = claw(-1), clawR = claw(+1);
+const fingerL = clawL.group, fingerR = clawR.group;     // the pivoting halves
+const jawL = clawL.jaw, jawR = clawR.jaw;               // stay upright as they open
+fingerL.position.set(-0.145, 0.11, 0);
+fingerR.position.set(0.145, 0.11, 0);
 gripperBase.add(fingerL, fingerR);
 
 const tcp = new THREE.Object3D();           // tool centre point, for the Z readout
-tcp.position.y = 0.78;
+tcp.position.y = 1.15;
 gripperBase.add(tcp);
 
 // ------------------------------------------------------------- axis gizmo ---
@@ -679,7 +754,7 @@ function frame(now) {
 
   for (const k in shown) shown[k] += (target[k] - shown[k]) * SMOOTH;
 
-  baseAngleDeg += baseDir * BASE_DEG_PER_SEC * (baseSpeedPct / 100) * dt;
+  baseAngleDeg += baseDir * baseDegPerSec * (baseSpeedPct / 100) * dt;
   baseYaw.rotation.y = rad(-baseAngleDeg * (BASE_CAL.invert ? -1 : 1) + BASE_CAL.offset);
 
   shoulder.rotation.z   = jointRad("shoulder",   shown.shoulder);
@@ -689,9 +764,11 @@ function frame(now) {
 
   let t = Math.max(0, Math.min(1, (shown.gripper - GRIP_OPEN) / (GRIP_CLOSED - GRIP_OPEN)));
   if (JOINTS.gripper.invert) t = 1 - t;        // jaws opposite to the real claw
-  const jaw = 0.44 * (1 - t);
+  const jaw = 0.5 * (1 - t);
   fingerL.rotation.z = jaw;
   fingerR.rotation.z = -jaw;
+  jawL.rotation.z = -jaw;          // parallelogram: the jaws stay upright
+  jawR.rotation.z = jaw;
 
   render();
   refreshReadouts();
@@ -869,7 +946,7 @@ async function moveJoint(name, to, alive) {
 
 /** Base: out by baseSweepDeg, hold, then the same amount back to the start. */
 async function sweepBaseAndReturn(alive) {
-  const rate = BASE_DEG_PER_SEC * (DEMO.baseSpeedPct / 100);   // degrees per second
+  const rate = baseDegPerSec * (DEMO.baseSpeedPct / 100);      // degrees per second
   const runMs = (DEMO.baseSweepDeg / Math.max(rate, 1)) * 1000;
 
   setSpeedUI(DEMO.baseSpeedPct);
@@ -881,7 +958,7 @@ async function sweepBaseAndReturn(alive) {
     demoStateEl.textContent = dir === "cw" ? "base +" + DEMO.baseSweepDeg + " deg"
                                            : "base back to start";
     pub("arm/base", dir);
-    await waitWhile(runMs, alive);
+    await waitWhile(dir === "cw" ? runMs : runMs * DEMO.returnFactor, alive);
     pub("arm/base", "stop");              // sent even when cancelled mid-run
     if (dir === "cw") await waitWhile(DEMO.baseHoldSeconds * 1000, alive);
   }
@@ -937,14 +1014,16 @@ function setStatus(ok, text, showHelp) {
 }
 
 // ============================================================== calibration
-const CAL_KEY = "arm3d-calibration-v3";
+const CAL_KEY = "arm3d-calibration-v4";
 const CAL_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(
   [...Object.entries(JOINTS), ["base", BASE_CAL]].map(([k, v]) => [k, { invert: v.invert, offset: v.offset }]))));
 
 try {
   const saved = JSON.parse(localStorage.getItem(CAL_KEY) || "{}");
   for (const name in saved) {
-    if (name === "base") Object.assign(BASE_CAL, saved.base);
+    if (name === "baseRate") baseDegPerSec = Number(saved.baseRate) || baseDegPerSec;
+    else if (name === "baseTrim") baseTrim = Number(saved.baseTrim) || baseTrim;
+    else if (name === "base") Object.assign(BASE_CAL, saved.base);
     else if (JOINTS[name]) Object.assign(JOINTS[name], saved[name]);
   }
 } catch (e) { /* unreadable storage - fall back to the defaults above */ }
@@ -953,6 +1032,8 @@ function saveCal() {
   const out = {};
   for (const [name, j] of Object.entries(JOINTS)) out[name] = { invert: j.invert, offset: j.offset };
   out.base = { invert: BASE_CAL.invert, offset: BASE_CAL.offset };
+  out.baseRate = baseDegPerSec;
+  out.baseTrim = baseTrim;
   try { localStorage.setItem(CAL_KEY, JSON.stringify(out)); } catch (e) { /* private mode */ }
 }
 
@@ -978,6 +1059,32 @@ for (const [name, j] of [...Object.entries(JOINTS), ["base", BASE_CAL]]) {
   calRows.appendChild(row);
 }
 
+const baseRateEl = document.getElementById("baseRate");
+const baseRateNum = document.getElementById("baseRateNum");
+function setBaseRateUI(v) {
+  baseDegPerSec = Math.max(2, Math.min(360, Number(v) || 90));
+  baseRateEl.value = baseDegPerSec;
+  baseRateNum.value = baseDegPerSec;
+}
+baseRateEl.addEventListener("input", () => { setBaseRateUI(baseRateEl.value); saveCal(); });
+baseRateNum.addEventListener("change", () => { setBaseRateUI(baseRateNum.value); saveCal(); });
+setBaseRateUI(baseDegPerSec);          // reflect whatever was loaded from storage
+
+const BASE_TRIM_DEFAULT = 307;
+let baseTrim = BASE_TRIM_DEFAULT;
+const baseTrimEl = document.getElementById("baseTrim");
+const baseTrimNum = document.getElementById("baseTrimNum");
+function setBaseTrimUI(v, send) {
+  baseTrim = Math.max(240, Math.min(380, Math.round(Number(v) || BASE_TRIM_DEFAULT)));
+  baseTrimEl.value = baseTrim;
+  baseTrimNum.value = baseTrim;
+  if (send) pub("arm/base/trim", baseTrim);
+}
+baseTrimEl.addEventListener("input", () => setBaseTrimUI(baseTrimEl.value, false));
+baseTrimEl.addEventListener("change", () => { setBaseTrimUI(baseTrimEl.value, true); saveCal(); });
+baseTrimNum.addEventListener("change", () => { setBaseTrimUI(baseTrimNum.value, true); saveCal(); });
+setBaseTrimUI(baseTrim, false);        // reflect whatever was loaded from storage
+
 document.getElementById("calReset").onclick = () => {
   for (const [name, ui] of Object.entries(calUI)) {
     const d = CAL_DEFAULTS[name];
@@ -985,6 +1092,8 @@ document.getElementById("calReset").onclick = () => {
     ui.slider.value = d.offset; ui.chk.checked = d.invert;
     ui.out.innerHTML = d.offset + "&deg;";
   }
+  setBaseRateUI(15);
+  setBaseTrimUI(BASE_TRIM_DEFAULT, true);
   saveCal();
   addLog("calibration restored to the built-in defaults");
 };
@@ -1019,6 +1128,7 @@ function connect(host) {
     setStatus(true, "linked", false);
     client.subscribe(["arm/state", "arm/status", "arm/log", "arm/base", "arm/base/speed"]);
     pub("arm/base/speed", baseSpeedEl.value);
+    pub("arm/base/trim", baseTrim);          // the controller forgets this on reboot
     addLog("broker link established (" + host + ":9001)");
   });
 

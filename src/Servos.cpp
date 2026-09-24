@@ -68,16 +68,31 @@ void writeServoPulse(int channel, float angle) {
 }
 
 // Control continuous rotation base motor speed and direction (CH0)
+// Where "stop" really is for this particular servo. Starts at the value in
+// Config.h and can be trimmed at runtime via the arm/base/trim topic, because
+// no two continuous-rotation servos have the same neutral.
+static int basePulseStop = BASE_PULSE_STOP;
+static int baseLastPercent = 0;
+
 // Continuous rotation base: percent is -100 (full CCW) .. +100 (full CW).
-// Symmetric about the servo's real neutral, so CW and CCW mirror each other.
+// Symmetric about the servo's neutral, so CW and CCW mirror each other.
 void setBaseSpeed(int percent) {
   percent = constrain(percent, -100, 100);
+  baseLastPercent = percent;
   if (percent == 0) {
     // Stop = no pulse at all. Any pulse near neutral still makes the base creep,
     // so cutting the signal is the only reliable way to hold it still.
     pwm.setPWM(BASE_SERVO, 0, 0);
     return;
   }
-  int pulse = BASE_PULSE_STOP + (long)BASE_PULSE_SPAN * percent / 100;
+  int pulse = basePulseStop + (long)BASE_PULSE_SPAN * percent / 100;
   pwm.setPWM(BASE_SERVO, 0, pulse);
 }
+
+// Move the neutral point. Applies immediately if the base is already turning.
+void setBaseTrim(int pulseStop) {
+  basePulseStop = constrain(pulseStop, 200, 420);
+  if (baseLastPercent != 0) setBaseSpeed(baseLastPercent);
+}
+
+int getBaseTrim() { return basePulseStop; }

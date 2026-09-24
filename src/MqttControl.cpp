@@ -13,6 +13,7 @@ static const char* T_SERVO_SUB  = MQTT_BASE_TOPIC "/servo/+";     // arm/servo/<
 static const char* T_SERVO_PREF = MQTT_BASE_TOPIC "/servo/";
 static const char* T_BASE       = MQTT_BASE_TOPIC "/base";        // payload: cw | ccw | stop
 static const char* T_BASE_SPEED = MQTT_BASE_TOPIC "/base/speed";  // payload: 0-100
+static const char* T_BASE_TRIM  = MQTT_BASE_TOPIC "/base/trim";   // payload: neutral pulse, counts
 static const char* T_HOME       = MQTT_BASE_TOPIC "/home";        // any payload
 
 static WiFiClient wifiClient;
@@ -75,6 +76,10 @@ static void onMessage(char* topicC, byte* payloadB, unsigned int len) {
     homeServos();
     logMsg("Homing all joints to home pose and stopping base.");
   }
+  else if (topic == T_BASE_TRIM) {
+    setBaseTrim(payload.toInt());
+    logMsg("OK: base trim set to " + String(getBaseTrim()) + " counts");
+  }
   else if (topic == T_BASE_SPEED) {
     baseSpeedPercent = constrain(payload.toInt(), 0, 100);
     logMsg("OK: base speed set to " + String(baseSpeedPercent) + "%");
@@ -113,6 +118,7 @@ static bool mqttReconnect() {
   mqtt.subscribe(T_SERVO_SUB);
   mqtt.subscribe(T_BASE);
   mqtt.subscribe(T_BASE_SPEED);
+  mqtt.subscribe(T_BASE_TRIM);
   mqtt.subscribe(T_HOME);
   publishState(true);
   logMsg("Robot arm ready. IP: " + WiFi.localIP().toString());
