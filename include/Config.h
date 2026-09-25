@@ -40,6 +40,13 @@ const int HOME_POSE[TOTAL_SERVOS] = { 90, 151,     153,   54,      57,     90 };
 const unsigned long STEP_INTERVAL_US = 8000;
 const float STEP_SIZE_DEG = 1.0;
 
+// Hold this pin LOW at boot to force the setup portal open (BOOT button on
+// most ESP32 dev boards). Also erases the stored Wi-Fi credentials.
+const int PORTAL_BUTTON = 0;
+const char* const PORTAL_AP_NAME = "ArmRobot-Setup";
+const char* const PORTAL_AP_PASS = "arm12345";     // >= 8 chars
+const int PORTAL_TIMEOUT_S = 180;                  // give up and carry on after this
+
 // ESP32 Pins
 const int STATUS_LED = 13;
 const int BUZZER_PIN = 14;

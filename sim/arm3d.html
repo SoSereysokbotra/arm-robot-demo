@@ -6,7 +6,7 @@
 <title>ARM-01 Workstation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --ink:       #14181d;
@@ -84,6 +84,7 @@ button:active { background: var(--accent-bg); border-color: var(--accent); color
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
 button.primary:hover { background: #0d54b8; }
 button.primary:active { background: #0b4aa3; color: #fff; }
+button.on { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
 /* ------------------------------------------------------------ viewport --- */
 #viewport {
@@ -98,6 +99,14 @@ button.primary:active { background: #0b4aa3; color: #fff; }
 #vpName { top: 12px; left: 14px; }
 #vpHelp { bottom: 12px; right: 14px; text-align: right; line-height: 1.7; }
 
+#viewCube {
+  position: absolute; top: 10px; right: 12px; display: flex; gap: 4px;
+}
+#viewCube button {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  padding: 5px 8px; background: rgba(255,255,255,.82); backdrop-filter: blur(4px);
+}
+
 /* ----------------------------------------------------------- inspector --- */
 #inspector {
   grid-area: inspector; background: var(--panel); border-left: 1px solid var(--rule);
@@ -106,7 +115,7 @@ button.primary:active { background: #0b4aa3; color: #fff; }
 .tabs { display: flex; border-bottom: 1px solid var(--rule); flex: none; }
 .tab {
   flex: 1; border: 0; border-radius: 0; background: var(--chrome);
-  font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-2);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .09em; color: var(--ink-2);
   padding: 11px 0; border-bottom: 2px solid transparent;
 }
 .tab:hover { color: var(--ink); background: #eef1f4; }
@@ -127,7 +136,6 @@ button.primary:active { background: #0b4aa3; color: #fff; }
 
 .is-locked { opacity: .42; pointer-events: none; }
 
-/* joint rows */
 .jrow { margin-bottom: 13px; }
 .jtop { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .ax { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 600; width: 20px; flex: none; }
@@ -176,7 +184,6 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
   max-height: 122px; overflow-y: auto; white-space: pre-wrap;
 }
 
-/* calibration rows */
 .crow { padding: 11px 0; border-bottom: 1px solid var(--rule-soft); }
 .ctop { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .ctop .nm { flex: 1; font-size: 12px; color: var(--ink-2); }
@@ -184,6 +191,41 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
 .flip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono);
   font-size: 10px; letter-spacing: .07em; color: var(--ink-3); cursor: pointer; text-transform: uppercase; }
 .flip input { accent-color: var(--accent); margin: 0; }
+
+.toggle { display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--rule-soft); font-size: 12px; color: var(--ink-2); }
+.toggle:last-of-type { border-bottom: 0; }
+.toggle input { accent-color: var(--accent); width: 15px; height: 15px; }
+.hint { margin: 9px 0 0; color: var(--ink-3); font-size: 11px; line-height: 1.65; }
+kbd {
+  font-family: var(--mono); font-size: 10px; background: var(--chrome);
+  border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 3px;
+  padding: 1px 5px; color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------- data flow --- */
+.flow { display: flex; align-items: center; gap: 0; }
+.flow .node {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 5px 7px; background: var(--panel); white-space: nowrap; transition: all .18s;
+}
+.flow .node.lit { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.flow .track { flex: 1; height: 2px; background: var(--rule); position: relative; min-width: 18px; }
+.flow .pip {
+  position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); left: 0;
+}
+@keyframes pipFwd { from { left: 0; opacity: 1 } to { left: calc(100% - 8px); opacity: .25 } }
+@keyframes pipBack { from { left: calc(100% - 8px); opacity: 1 } to { left: 0; opacity: .25 } }
+
+#ticker {
+  font-family: var(--mono); font-size: 11px; line-height: 1.8; color: var(--ink-2);
+  max-height: 120px; overflow: hidden;
+}
+#ticker .t-out { color: var(--accent); }
+#ticker .t-in  { color: var(--ok); }
+#ticker b { font-weight: 600; }
 
 /* ---------------------------------------------------------- statusbar --- */
 #statusbar {
@@ -198,12 +240,80 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
 #statusbar .grow { flex: 1; border-right: 0; }
 #statusbar .cell.alert v { color: var(--stop); }
 
+/* =================================================== presentation mode === */
+#stage { display: none; }
+body.present { grid-template-rows: 0 1fr 0; grid-template-columns: 1fr 0; }
+body.present #toolbar, body.present #inspector, body.present #statusbar,
+body.present #vpHelp, body.present #vpName, body.present #viewCube { display: none; }
+body.present #stage {
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: fixed; inset: 0; pointer-events: none; padding: 26px 34px 30px;
+}
+
+#stageTop { display: flex; align-items: center; gap: 20px; }
+#stageTop .title { font-size: 30px; font-weight: 700; letter-spacing: -.01em; }
+#stageTop .sub { font-family: var(--mono); font-size: 14px; color: var(--ink-3); letter-spacing: .06em; }
+#stageChip {
+  font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .07em;
+  padding: 8px 16px; border-radius: 4px; border: 2px solid var(--stop); color: var(--stop);
+  background: rgba(255,255,255,.7); display: inline-flex; align-items: center; gap: 10px;
+}
+#stageChip.on { border-color: var(--ok); color: var(--ok); }
+#stageChip .led { width: 11px; height: 11px; border-radius: 50%; background: currentColor; }
+
+#stageBottom { display: flex; flex-direction: column; gap: 16px; }
+
+#stageAction {
+  font-size: 44px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1;
+  color: var(--ink); min-height: 50px;
+}
+#stageAction small { display: block; font-family: var(--mono); font-size: 14px;
+  font-weight: 500; letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; margin-bottom: 6px; }
+
+#stageJoints { display: flex; gap: 10px; flex-wrap: wrap; }
+.sj {
+  background: rgba(255,255,255,.82); border: 1px solid var(--rule); border-radius: 5px;
+  padding: 10px 16px; min-width: 112px; backdrop-filter: blur(5px);
+}
+.sj k { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .11em;
+  color: var(--ink-3); text-transform: uppercase; margin-bottom: 3px; }
+.sj v { display: block; font-family: var(--mono); font-size: 27px; font-weight: 600; color: var(--ink); }
+
+#stageFlow {
+  background: rgba(255,255,255,.82); border: 1px solid var(--rule); border-radius: 5px;
+  padding: 13px 18px; backdrop-filter: blur(5px);
+  display: flex; align-items: center; gap: 22px;
+}
+#stageFlow .flow { flex: 1; }
+#stageFlow .flow .node { font-size: 12px; padding: 8px 12px; }
+#stageFlow .metric { font-family: var(--mono); font-size: 13px; color: var(--ink-3); white-space: nowrap; }
+#stageFlow .metric b { color: var(--ink); font-size: 17px; font-weight: 600; }
+
+#stageSide {
+  position: fixed; right: 34px; top: 50%; transform: translateY(-50%);
+  width: 330px; display: flex; flex-direction: column; gap: 14px; pointer-events: none;
+}
+#stageTicker {
+  background: rgba(255,255,255,.82); border: 1px solid var(--rule); border-radius: 5px;
+  padding: 13px 16px; backdrop-filter: blur(5px);
+  font-family: var(--mono); font-size: 13px; line-height: 1.95; overflow: hidden;
+}
+#stageTicker .hd { font-size: 10px; letter-spacing: .12em; color: var(--ink-3);
+  text-transform: uppercase; margin-bottom: 7px; }
+#stageQR {
+  background: rgba(255,255,255,.9); border: 1px solid var(--rule); border-radius: 5px;
+  padding: 12px; display: flex; gap: 13px; align-items: center;
+}
+#stageQR .cap { font-family: var(--mono); font-size: 11px; color: var(--ink-3); line-height: 1.6; }
+#stageQR img, #stageQR canvas { display: block; width: 84px; height: 84px; }
+
 @media (max-width: 900px) {
   body { grid-template-columns: 1fr; grid-template-rows: 46px 52vh 1fr 28px;
          grid-template-areas: "toolbar" "viewport" "inspector" "statusbar"; }
   #inspector { border-left: 0; border-top: 1px solid var(--rule); }
   #toolbar { gap: 9px; overflow-x: auto; }
   .brand span { display: none; }
+  #stageSide { display: none; }
 }
 </style>
 </head>
@@ -215,18 +325,25 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
   <div class="spacer"></div>
   <div class="field"><label for="host">BROKER</label><input id="host" value="192.168.1.194" spellcheck="false"></div>
   <button id="go" class="primary">Connect</button>
-  <button id="resetView">Reset view</button>
+  <button id="presentBtn">Present <kbd>P</kbd></button>
 </header>
 
 <main id="viewport">
   <canvas id="view"></canvas>
   <div id="vpName" class="vp-tag">Perspective &middot; digital twin</div>
   <div id="vpHelp" class="vp-tag">drag &mdash; orbit<br>wheel &mdash; zoom<br>right-drag &mdash; pan</div>
+  <div id="viewCube">
+    <button data-view="front">FRONT</button>
+    <button data-view="side">SIDE</button>
+    <button data-view="top">TOP</button>
+    <button data-view="iso">ISO</button>
+  </div>
 </main>
 
 <aside id="inspector">
   <nav class="tabs">
     <button class="tab is-on" data-tab="control">CONTROL</button>
+    <button class="tab" data-tab="display">DISPLAY</button>
     <button class="tab" data-tab="calibrate">CALIBRATE</button>
   </nav>
 
@@ -235,6 +352,19 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
       <b>No link to the broker</b>
       Mosquitto must run with a WebSocket listener:
       <code>listener 9001 0.0.0.0</code> <code>protocol websockets</code>
+    </div>
+
+    <div class="group">
+      <h2>Signal path <em id="latencyLabel">&mdash;</em></h2>
+      <div class="flow" id="flowMini">
+        <span class="node" data-node="browser">Browser</span>
+        <span class="track" data-track="0"></span>
+        <span class="node" data-node="broker">Broker</span>
+        <span class="track" data-track="1"></span>
+        <span class="node" data-node="esp32">ESP32</span>
+        <span class="track" data-track="2"></span>
+        <span class="node" data-node="servos">Servos</span>
+      </div>
     </div>
 
     <div class="group">
@@ -283,15 +413,64 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
     </div>
 
     <div class="group">
+      <h2>MQTT traffic</h2>
+      <div id="ticker"></div>
+    </div>
+
+    <div class="group">
       <h2>Activity</h2>
       <div id="activity">waiting for the controller&hellip;</div>
+    </div>
+  </section>
+
+  <section id="paneDisplay" class="pane" hidden>
+    <div class="group">
+      <h2>Presentation</h2>
+      <div class="btnrow"><button id="presentBtn2" class="primary">Enter presentation mode</button></div>
+      <p class="hint">
+        Fills the screen with the model and large readouts, and hides every control.
+        Leave it with <kbd>P</kbd> or <kbd>Esc</kbd>.
+      </p>
+    </div>
+
+    <div class="group">
+      <h2>Model overlays</h2>
+      <label class="toggle"><span>Ghost of the commanded pose</span><input type="checkbox" id="optGhost" checked></label>
+      <label class="toggle"><span>Trail behind the tool tip</span><input type="checkbox" id="optTrail" checked></label>
+      <label class="toggle"><span>Joint travel arcs</span><input type="checkbox" id="optArcs"></label>
+      <label class="toggle"><span>Drift the camera when idle</span><input type="checkbox" id="optOrbit" checked></label>
+      <p class="hint">
+        The ghost shows where the arm has been <em>told</em> to go; the solid model shows
+        where it reports being. The gap between them is the easing at work.
+      </p>
+    </div>
+
+    <div class="group">
+      <h2>Audience QR code</h2>
+      <div class="field" style="width:100%">
+        <label for="qrUrl">URL</label>
+        <input id="qrUrl" style="flex:1;width:auto" spellcheck="false">
+      </div>
+      <p class="hint">
+        Shown in presentation mode so the audience can open something on their phones.
+        Defaults to the Node-RED dashboard on your PC.
+      </p>
+    </div>
+
+    <div class="group">
+      <h2>Keys</h2>
+      <p class="hint">
+        <kbd>P</kbd> presentation &nbsp; <kbd>D</kbd> run demo &nbsp; <kbd>Space</kbd> stop everything<br>
+        <kbd>1</kbd> front &nbsp; <kbd>2</kbd> side &nbsp; <kbd>3</kbd> top &nbsp; <kbd>4</kbd> iso &nbsp; <kbd>H</kbd> home<br>
+        <kbd>G</kbd> ghost &nbsp; <kbd>T</kbd> trail &nbsp; <kbd>R</kbd> reset the view
+      </p>
     </div>
   </section>
 
   <section id="paneCalibrate" class="pane" hidden>
     <div class="group">
       <h2>Model alignment</h2>
-      <p style="margin:0 0 4px;color:var(--ink-2);line-height:1.65;font-size:12px">
+      <p class="hint" style="margin-top:0">
         The servo-to-linkage angle depends on how each horn is bolted on.
         <b>Offset</b> rotates a joint in the model; <b>flip</b> reverses its direction.
         Values are stored in this browser.
@@ -306,10 +485,8 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
           <span class="deg" style="width:34px">&deg;/s</span>
         </div>
         <input id="baseRate" type="range" min="2" max="360" step="1" value="15">
-        <p style="margin:8px 0 0;color:var(--ink-3);line-height:1.6;font-size:11px">
-          Lower this if the model&rsquo;s base spins faster than the real one.
-          To measure: set speed 100 %, hold CW for 10 s, note how far the real
-          base turned, and enter that figure divided by 10.
+        <p class="hint">
+          How fast the real base turns. Lower it if the model spins faster than the arm.
         </p>
       </div>
 
@@ -321,10 +498,9 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
           <span class="deg" style="width:34px">cnt</span>
         </div>
         <input id="baseTrim" type="range" min="240" max="380" step="1" value="307">
-        <p style="margin:8px 0 0;color:var(--ink-3);line-height:1.6;font-size:11px">
-          Balances the real base&rsquo;s two directions. <b>Raise</b> it to make CW
-          faster and CCW slower; <b>lower</b> it for the opposite. Sent to the
-          controller, which forgets it on reboot &mdash; the app resends on connect.
+        <p class="hint">
+          Balances the real base&rsquo;s two directions. Raise it to make CW faster and
+          CCW slower. Sent to the controller, which forgets it on reboot.
         </p>
       </div>
 
@@ -341,12 +517,48 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
   <span class="cell"><k>SPD</k><v id="sbSpeed">050%</v></span>
   <span class="cell"><k>GRIP</k><v id="sbGrip">&mdash;</v></span>
   <span class="cell"><k>TCP&nbsp;Z</k><v id="sbHeight">0.00</v></span>
+  <span class="cell"><k>RTT</k><v id="sbRtt">&mdash;</v></span>
+  <span class="cell"><k>MSG/S</k><v id="sbRate">0</v></span>
   <span class="cell grow"><k>BROKER</k><v id="sbLink">&mdash;</v></span>
   <span class="cell"><k>FPS</k><v id="sbFps">0</v></span>
 </footer>
 
+<!-- ============================================ presentation overlay === -->
+<div id="stage">
+  <div id="stageTop">
+    <span class="title">ARM-01</span>
+    <span class="sub">5-DOF ROBOT ARM &middot; ESP32 &middot; MQTT</span>
+    <div class="spacer"></div>
+    <span id="stageChip"><span class="led"></span><span id="stageLink">CONNECTING</span></span>
+  </div>
+
+  <div id="stageBottom">
+    <div id="stageAction"><small>status</small>Ready</div>
+    <div id="stageJoints"></div>
+    <div id="stageFlow">
+      <div class="flow" id="flowBig">
+        <span class="node" data-node="browser">Browser</span>
+        <span class="track" data-track="0"></span>
+        <span class="node" data-node="broker">MQTT broker</span>
+        <span class="track" data-track="1"></span>
+        <span class="node" data-node="esp32">ESP32</span>
+        <span class="track" data-track="2"></span>
+        <span class="node" data-node="servos">Servos</span>
+      </div>
+      <div class="metric">round trip <b id="stageRtt">&mdash;</b></div>
+      <div class="metric">msg/s <b id="stageRate">0</b></div>
+    </div>
+  </div>
+
+  <div id="stageSide">
+    <div id="stageTicker"><div class="hd">Live MQTT traffic</div><div id="stageTickerBody"></div></div>
+    <div id="stageQR"><div id="qrBox"></div><div class="cap">Open the<br>dashboard<br>on your phone</div></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.0/mqtt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 // A render-loop exception used to leave a blank viewport with no clue why.
 // Report the first one into the Activity panel and the page title.
@@ -388,10 +600,8 @@ const PRESETS = {
   place: { 1: 60,  2: 120, 3: 60,  4: 90,  5: GRIP_CLOSED },
 };
 
-// How fast the real base turns at 100 % speed. The continuous servo reports
-// nothing back, so this has to be measured. It drives both how fast the model
-// spins and how long the demo runs the base for. Tune it live in the
-// CALIBRATE tab ("base speed"); the value is stored with the calibration.
+// How fast the real base turns at 100 % speed. Measured, not reported - tune it
+// live in the CALIBRATE tab. It drives both the model and the demo's timing.
 let baseDegPerSec = 15;
 
 // ---- Demo sequence, for showing the arm to an audience.
@@ -400,26 +610,23 @@ let baseDegPerSec = 15;
 // The wrist and gripper run at normal speed. ONLY THE BASE is slowed down, and
 // it always sweeps out and straight back, so it finishes where it started.
 const DEMO = {
-  jointPauseSeconds: 1.2,   // wait after each wrist/gripper command
-  baseSweepDeg:      20,    // how far the base turns before coming back
-  baseSpeedPct:      30,    // base speed during the demo - lower is slower
-  baseHoldSeconds:   1.0,   // pause at +20 deg before returning
-  // Continuous servos rarely run at the same speed both ways, so the same
-  // run-time covers a different angle. If the base does not come all the way
-  // back, raise this; if it goes past the start, lower it. 1.0 = equal times.
-  returnFactor:      1.0,
-  loop:              true,  // repeat until Stop is pressed
+  jointPauseSeconds: 1.2,
+  baseSweepDeg:      20,
+  baseSpeedPct:      30,
+  baseHoldSeconds:   1.0,
+  returnFactor:      1.0,   // raise if the base does not come all the way back
+  loop:              true,
   steps: [
-    { joint: "gripper",    to: GRIP_OPEN,   say: "open the gripper" },
-    { joint: "wristPitch", to: 87,          say: "wrist pitch up" },
-    { joint: "wristPitch", to: 27,          say: "wrist pitch down" },
-    { joint: "wristPitch", to: 57,          say: "wrist pitch centre" },
-    { joint: "wristRoll",  to: 84,          say: "wrist roll right" },
-    { joint: "wristRoll",  to: 24,          say: "wrist roll left" },
-    { joint: "wristRoll",  to: 54,          say: "wrist roll centre" },
-    { joint: "gripper",    to: GRIP_CLOSED, say: "close the gripper" },
-    { baseSweep: true,                      say: "base +20 deg, then back" },
-    { joint: "gripper",    to: GRIP_OPEN,   say: "open the gripper" },
+    { joint: "gripper",    to: GRIP_OPEN,   say: "Open the gripper" },
+    { joint: "wristPitch", to: 87,          say: "Wrist pitch up" },
+    { joint: "wristPitch", to: 27,          say: "Wrist pitch down" },
+    { joint: "wristPitch", to: 57,          say: "Wrist pitch centre" },
+    { joint: "wristRoll",  to: 84,          say: "Wrist roll right" },
+    { joint: "wristRoll",  to: 24,          say: "Wrist roll left" },
+    { joint: "wristRoll",  to: 54,          say: "Wrist roll centre" },
+    { joint: "gripper",    to: GRIP_CLOSED, say: "Close the gripper" },
+    { baseSweep: true,                      say: "Rotate the base and return" },
+    { joint: "gripper",    to: GRIP_OPEN,   say: "Open the gripper" },
   ],
 };
 
@@ -452,7 +659,6 @@ const fillLight = new THREE.DirectionalLight(0xdfe8f5, 0.35);
 fillLight.position.set(-6, 4, -5);
 scene.add(fillLight);
 
-// contact shadow only - the studio gradient stays visible underneath
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: 0.17 }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
@@ -465,196 +671,266 @@ grid.position.y = 0.001;
 scene.add(grid);
 
 // ----------------------------------------------------------------- materials
-const matLink   = new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 0.55, metalness: 0.12 });
-const matBlack  = new THREE.MeshStandardMaterial({ color: 0x24282e, roughness: 0.68, metalness: 0.1 });
-const matMetal  = new THREE.MeshStandardMaterial({ color: 0xb9c2cc, roughness: 0.3,  metalness: 0.85 });
-const matServo  = new THREE.MeshStandardMaterial({ color: 0x1b1e23, roughness: 0.45, metalness: 0.2 });
-const matAccent = new THREE.MeshStandardMaterial({ color: 0x0f5fd0, roughness: 0.4,  metalness: 0.15 });
+const SOLID = {
+  link:   new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 0.55, metalness: 0.12 }),
+  black:  new THREE.MeshStandardMaterial({ color: 0x24282e, roughness: 0.68, metalness: 0.1 }),
+  metal:  new THREE.MeshStandardMaterial({ color: 0xb9c2cc, roughness: 0.3,  metalness: 0.85 }),
+  servo:  new THREE.MeshStandardMaterial({ color: 0x1b1e23, roughness: 0.45, metalness: 0.2 }),
+  accent: new THREE.MeshStandardMaterial({ color: 0x0f5fd0, roughness: 0.4,  metalness: 0.15 }),
+};
+function ghostMat(color) {
+  return new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0.16, depthWrite: false,
+  });
+}
+const GHOST = {
+  link: ghostMat(0x0f5fd0), black: ghostMat(0x0f5fd0), metal: ghostMat(0x0f5fd0),
+  servo: ghostMat(0x0f5fd0), accent: ghostMat(0x0f5fd0),
+};
 
-function box(w, h, d, mat) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-  m.castShadow = m.receiveShadow = true;
-  return m;
-}
-function cyl(r, h, mat, seg = 28) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
-  m.castShadow = m.receiveShadow = true;
-  return m;
-}
-/** A flat printed plate along +Y with rounded ends. Pivot sits at the lower cap centre. */
-function plate(len, width, thick, mat) {
-  const g = new THREE.Group();
-  const bar = box(width, len, thick, mat);
-  bar.position.y = len / 2;
-  g.add(bar);
-  for (const y of [0, len]) {
-    const cap = cyl(width / 2, thick, mat, 24);
-    cap.rotation.x = Math.PI / 2;
-    cap.position.y = y;
-    g.add(cap);
-  }
-  return g;
-}
-/** Two parallel plates - the fork/yoke shape these kits are printed in. */
-function fork(len, width, thick, gap, mat) {
-  const g = new THREE.Group();
-  for (const z of [-gap / 2, gap / 2]) {
-    const side = plate(len, width, thick, mat);
-    side.position.z = z;
-    g.add(side);
-  }
-  return g;
-}
-function screw(x, y, z, r = 0.045) {
-  const m = cyl(r, 0.06, matMetal, 12);
-  m.rotation.x = Math.PI / 2;
-  m.position.set(x, y, z);
-  return m;
-}
-function servo() {
-  const g = new THREE.Group();
-  g.add(box(0.42, 0.22, 0.46, matServo));
-  const top = box(0.42, 0.06, 0.46, matAccent);
-  top.position.y = 0.14;
-  g.add(top);
-  const horn = cyl(0.09, 0.1, matMetal, 16);
-  horn.rotation.x = Math.PI / 2;
-  horn.position.set(0.12, 0, 0.26);
-  g.add(horn);
-  return g;
-}
-
-// --------------------------------------------- kinematic chain (bottom -> up)
+// ------------------------------------------------------------- arm factory --
+// Built twice: once solid for the reported pose, once translucent for the pose
+// the arm has been commanded to. Returns every joint group the animation needs.
 const UPPER_LEN = 1.85, FORE_LEN = 1.45, WRIST_LEN = 0.42;
 
-const flange = cyl(1.12, 0.1, matBlack, 48);
-flange.position.y = 0.05;
-scene.add(flange);
-for (let i = 0; i < 6; i++) {
-  const a = (i / 6) * Math.PI * 2;
-  scene.add(screw(Math.cos(a) * 0.96, 0.11, Math.sin(a) * 0.96, 0.05));
-}
-const pedestal = cyl(0.82, 0.8, matBlack, 48);
-pedestal.position.y = 0.45;
-scene.add(pedestal);
-
-const baseYaw = new THREE.Group();
-baseYaw.position.y = 0.85;
-scene.add(baseYaw);
-
-const turntable = cyl(0.86, 0.14, matLink, 48);
-turntable.position.y = 0.07;
-baseYaw.add(turntable);
-
-const shoulderYoke = fork(0.58, 0.46, 0.12, 0.6, matLink);
-shoulderYoke.position.y = 0.14;
-baseYaw.add(shoulderYoke);
-const shoulderServo = servo();
-shoulderServo.position.set(0, 0.36, 0);
-baseYaw.add(shoulderServo);
-
-const shoulder = new THREE.Group();
-shoulder.position.y = 0.72;
-baseYaw.add(shoulder);
-shoulder.add(fork(UPPER_LEN, 0.42, 0.12, 0.5, matLink));
-shoulder.add(screw(0, 0, 0.3), screw(0, 0, -0.3));
-
-const elbow = new THREE.Group();
-elbow.position.y = UPPER_LEN;
-shoulder.add(elbow);
-const elbowServo = servo();
-elbowServo.position.set(0, 0.16, 0);
-elbow.add(elbowServo);
-elbow.add(plate(FORE_LEN, 0.46, 0.44, matBlack));
-elbow.add(screw(0, 0, 0.24), screw(0, 0, -0.24));
-
-const wristPitch = new THREE.Group();
-wristPitch.position.y = FORE_LEN;
-elbow.add(wristPitch);
-const wristServo = servo();
-wristServo.scale.setScalar(0.8);
-wristServo.position.set(0, 0.1, 0);
-wristPitch.add(wristServo);
-wristPitch.add(fork(WRIST_LEN, 0.34, 0.11, 0.38, matLink));
-
-const wristRoll = new THREE.Group();
-wristRoll.position.y = WRIST_LEN;
-wristPitch.add(wristRoll);
-const rollHub = cyl(0.19, 0.12, matLink, 24);
-rollHub.position.y = 0.06;
-wristRoll.add(rollHub);
-
-const gripperBase = new THREE.Group();
-gripperBase.position.y = 0.12;
-wristRoll.add(gripperBase);
-
-// mounting bracket the whole claw bolts to
-const palm = box(0.62, 0.11, 0.3, matBlack);
-palm.position.y = 0.055;
-gripperBase.add(palm);
-gripperBase.add(screw(-0.24, 0.055, 0.16, 0.04), screw(0.24, 0.055, 0.16, 0.04));
-const gripServo = servo();
-gripServo.scale.setScalar(0.62);
-gripServo.position.set(0, 0.03, -0.22);
-gripperBase.add(gripServo);
-
-/** A toothed disc lying in the XY plane - the meshing pair at the claw's root. */
-function gearDisc(r, thick, teeth) {
-  const g = new THREE.Group();
-  const body = cyl(r, thick, matBlack, 26);
-  body.rotation.x = Math.PI / 2;
-  g.add(body);
-  for (let i = 0; i < teeth; i++) {
-    const a = (i / teeth) * Math.PI * 2;
-    const tooth = box(0.032, 0.055, thick, matBlack);
-    tooth.position.set(Math.cos(a) * (r + 0.02), Math.sin(a) * (r + 0.02), 0);
-    tooth.rotation.z = a - Math.PI / 2;
-    g.add(tooth);
+function buildArm(M, shadows) {
+  function box(w, h, d, mat) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.castShadow = m.receiveShadow = shadows;
+    return m;
   }
-  return g;
+  function cyl(r, h, mat, seg = 28) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+    m.castShadow = m.receiveShadow = shadows;
+    return m;
+  }
+  /** A flat printed plate along +Y with rounded ends, pivot at the lower cap. */
+  function plate(len, width, thick, mat) {
+    const g = new THREE.Group();
+    const bar = box(width, len, thick, mat);
+    bar.position.y = len / 2;
+    g.add(bar);
+    for (const y of [0, len]) {
+      const cap = cyl(width / 2, thick, mat, 24);
+      cap.rotation.x = Math.PI / 2;
+      cap.position.y = y;
+      g.add(cap);
+    }
+    return g;
+  }
+  /** Two parallel plates - the fork/yoke shape these kits are printed in. */
+  function fork(len, width, thick, gap, mat) {
+    const g = new THREE.Group();
+    for (const z of [-gap / 2, gap / 2]) {
+      const side = plate(len, width, thick, mat);
+      side.position.z = z;
+      g.add(side);
+    }
+    return g;
+  }
+  function screw(x, y, z, r = 0.045) {
+    const m = cyl(r, 0.06, M.metal, 12);
+    m.rotation.x = Math.PI / 2;
+    m.position.set(x, y, z);
+    return m;
+  }
+  function servo() {
+    const g = new THREE.Group();
+    g.add(box(0.42, 0.22, 0.46, M.servo));
+    const top = box(0.42, 0.06, 0.46, M.accent);
+    top.position.y = 0.14;
+    g.add(top);
+    const horn = cyl(0.09, 0.1, M.metal, 16);
+    horn.rotation.x = Math.PI / 2;
+    horn.position.set(0.12, 0, 0.26);
+    g.add(horn);
+    return g;
+  }
+  /** A toothed disc - the meshing pair at the claw's root. */
+  function gearDisc(r, thick, teeth) {
+    const g = new THREE.Group();
+    const body = cyl(r, thick, M.black, 26);
+    body.rotation.x = Math.PI / 2;
+    g.add(body);
+    for (let i = 0; i < teeth; i++) {
+      const a = (i / teeth) * Math.PI * 2;
+      const tooth = box(0.032, 0.055, thick, M.black);
+      tooth.position.set(Math.cos(a) * (r + 0.02), Math.sin(a) * (r + 0.02), 0);
+      tooth.rotation.z = a - Math.PI / 2;
+      g.add(tooth);
+    }
+    return g;
+  }
+  // One half of a parallel-linkage claw. The jaw counter-rotates, which is what
+  // the parallelogram does mechanically - it stays upright however far it opens.
+  function claw(side) {
+    const g = new THREE.Group();
+    g.add(gearDisc(0.135, 0.07, 14));
+    g.add(screw(0, 0, 0.055, 0.042));
+
+    const PROX = 0.52;
+    g.add(plate(PROX, 0.11, 0.13, M.black));
+    const coupler = plate(PROX - 0.06, 0.07, 0.09, M.black);
+    coupler.position.set(side * 0.06, 0.03, 0);
+    coupler.rotation.z = side * 0.30;          // the pair meet near the top
+    g.add(coupler);
+    g.add(screw(0, PROX, 0.08, 0.042));
+
+    const jaw = new THREE.Group();
+    jaw.position.y = PROX;
+    g.add(jaw);
+    jaw.add(plate(0.44, 0.1, 0.12, M.black));
+    const hook = plate(0.28, 0.09, 0.12, M.black);
+    hook.position.y = 0.44;
+    hook.rotation.z = side * 0.55;              // tip hooks inward to grip
+    jaw.add(hook);
+    jaw.add(screw(0, 0, 0.075, 0.036), screw(0, 0.44, 0.075, 0.036));
+    return { group: g, jaw };
+  }
+
+  const root = new THREE.Group();
+
+  if (shadows) {                                 // the pedestal never moves
+    const flange = cyl(1.12, 0.1, M.black, 48);
+    flange.position.y = 0.05;
+    root.add(flange);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      root.add(screw(Math.cos(a) * 0.96, 0.11, Math.sin(a) * 0.96, 0.05));
+    }
+    const pedestal = cyl(0.82, 0.8, M.black, 48);
+    pedestal.position.y = 0.45;
+    root.add(pedestal);
+  }
+
+  const baseYaw = new THREE.Group();
+  baseYaw.position.y = 0.85;
+  root.add(baseYaw);
+
+  const turntable = cyl(0.86, 0.14, M.link, 48);
+  turntable.position.y = 0.07;
+  baseYaw.add(turntable);
+  const shoulderYoke = fork(0.58, 0.46, 0.12, 0.6, M.link);
+  shoulderYoke.position.y = 0.14;
+  baseYaw.add(shoulderYoke);
+  const shoulderServo = servo();
+  shoulderServo.position.set(0, 0.36, 0);
+  baseYaw.add(shoulderServo);
+
+  const shoulder = new THREE.Group();
+  shoulder.position.y = 0.72;
+  baseYaw.add(shoulder);
+  shoulder.add(fork(UPPER_LEN, 0.42, 0.12, 0.5, M.link));
+  shoulder.add(screw(0, 0, 0.3), screw(0, 0, -0.3));
+
+  const elbow = new THREE.Group();
+  elbow.position.y = UPPER_LEN;
+  shoulder.add(elbow);
+  const elbowServo = servo();
+  elbowServo.position.set(0, 0.16, 0);
+  elbow.add(elbowServo);
+  elbow.add(plate(FORE_LEN, 0.46, 0.44, M.black));
+  elbow.add(screw(0, 0, 0.24), screw(0, 0, -0.24));
+
+  const wristPitch = new THREE.Group();
+  wristPitch.position.y = FORE_LEN;
+  elbow.add(wristPitch);
+  const wristServo = servo();
+  wristServo.scale.setScalar(0.8);
+  wristServo.position.set(0, 0.1, 0);
+  wristPitch.add(wristServo);
+  wristPitch.add(fork(WRIST_LEN, 0.34, 0.11, 0.38, M.link));
+
+  const wristRoll = new THREE.Group();
+  wristRoll.position.y = WRIST_LEN;
+  wristPitch.add(wristRoll);
+  const rollHub = cyl(0.19, 0.12, M.link, 24);
+  rollHub.position.y = 0.06;
+  wristRoll.add(rollHub);
+
+  const gripperBase = new THREE.Group();
+  gripperBase.position.y = 0.12;
+  wristRoll.add(gripperBase);
+  const palm = box(0.62, 0.11, 0.3, M.black);
+  palm.position.y = 0.055;
+  gripperBase.add(palm);
+  gripperBase.add(screw(-0.24, 0.055, 0.16, 0.04), screw(0.24, 0.055, 0.16, 0.04));
+  const gripServo = servo();
+  gripServo.scale.setScalar(0.62);
+  gripServo.position.set(0, 0.03, -0.22);
+  gripperBase.add(gripServo);
+
+  const cl = claw(-1), cr = claw(+1);
+  cl.group.position.set(-0.145, 0.11, 0);
+  cr.group.position.set(0.145, 0.11, 0);
+  gripperBase.add(cl.group, cr.group);
+
+  const tcp = new THREE.Object3D();
+  tcp.position.y = 1.15;
+  gripperBase.add(tcp);
+
+  return { root, baseYaw, shoulder, elbow, wristPitch, wristRoll,
+           fingerL: cl.group, fingerR: cr.group, jawL: cl.jaw, jawR: cr.jaw, tcp };
 }
 
-// One side of a parallel-linkage claw. The group pivots at the gear; the jaw is
-// a child that counter-rotates, which is what the parallelogram does mechanically
-// - the jaw stays upright however far the claw opens.
-function claw(side) {                       // side: -1 left, +1 right
-  const g = new THREE.Group();
-  g.add(gearDisc(0.135, 0.07, 14));
-  g.add(screw(0, 0, 0.055, 0.042));
+const ARM = buildArm(SOLID, true);
+scene.add(ARM.root);
+const GH = buildArm(GHOST, false);
+GH.root.renderOrder = 2;
+scene.add(GH.root);
 
-  const PROX = 0.52;
-  g.add(plate(PROX, 0.11, 0.13, matBlack));              // main arm
-  // Inner coupler bar: sits outboard at its base and leans in at the top, so the
-  // pair form a /\ that meets near the centre - not a V opening upward.
-  const coupler = plate(PROX - 0.06, 0.07, 0.09, matBlack);
-  coupler.position.set(side * 0.06, 0.03, 0);
-  coupler.rotation.z = side * 0.30;
-  g.add(coupler);
-  g.add(screw(0, PROX, 0.08, 0.042));
-
-  const jaw = new THREE.Group();
-  jaw.position.y = PROX;
-  g.add(jaw);
-  jaw.add(plate(0.44, 0.1, 0.12, matBlack));             // straight part of the jaw
-  const hook = plate(0.28, 0.09, 0.12, matBlack);        // tip hooks INWARD to grip
-  hook.position.y = 0.44;
-  hook.rotation.z = side * 0.55;
-  jaw.add(hook);
-  jaw.add(screw(0, 0, 0.075, 0.036), screw(0, 0.44, 0.075, 0.036));
-
-  return { group: g, jaw };
+// ------------------------------------------------------------ joint arcs ---
+// A faint arc at each hinge showing the servo's full travel, plus a needle at
+// the current angle. Off by default - it is detail for a close-up, not a demo.
+const arcGroup = new THREE.Group();
+scene.add(arcGroup);
+const arcs = [];
+function buildArcs() {
+  while (arcGroup.children.length) arcGroup.remove(arcGroup.children[0]);
+  arcs.length = 0;
+  const spec = [["shoulder", ARM.shoulder, 0.55], ["elbow", ARM.elbow, 0.45],
+                ["wristPitch", ARM.wristPitch, 0.36]];
+  for (const [name, joint, r] of spec) {
+    const a0 = jointRad(name, 0), a1 = jointRad(name, 180);
+    const curve = new THREE.EllipseCurve(0, 0, r, r, Math.min(a0, a1) + Math.PI / 2,
+                                         Math.max(a0, a1) + Math.PI / 2, false, 0);
+    const line = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)),
+      new THREE.LineBasicMaterial({ color: 0x0f5fd0, transparent: true, opacity: 0.4 }));
+    const needle = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, r, 0)]),
+      new THREE.LineBasicMaterial({ color: 0x0f5fd0 }));
+    const holder = new THREE.Group();           // sits in the joint's parent frame
+    holder.add(line);
+    joint.add(holder, needle);
+    arcs.push({ name, joint, holder, needle, line });
+  }
 }
 
-const clawL = claw(-1), clawR = claw(+1);
-const fingerL = clawL.group, fingerR = clawR.group;     // the pivoting halves
-const jawL = clawL.jaw, jawR = clawR.jaw;               // stay upright as they open
-fingerL.position.set(-0.145, 0.11, 0);
-fingerR.position.set(0.145, 0.11, 0);
-gripperBase.add(fingerL, fingerR);
+// ------------------------------------------------------------- tool trail ---
+const TRAIL_MAX = 240;
+const trailPts = [];
+const trailGeom = new THREE.BufferGeometry();
+trailGeom.setAttribute("position", new THREE.BufferAttribute(new Float32Array(TRAIL_MAX * 3), 3));
+trailGeom.setDrawRange(0, 0);
+const trail = new THREE.Line(trailGeom,
+  new THREE.LineBasicMaterial({ color: 0x0f5fd0, transparent: true, opacity: 0.55 }));
+trail.frustumCulled = false;
+scene.add(trail);
 
-const tcp = new THREE.Object3D();           // tool centre point, for the Z readout
-tcp.position.y = 1.15;
-gripperBase.add(tcp);
+function pushTrail(p) {
+  const last = trailPts[trailPts.length - 1];
+  if (last && last.distanceToSquared(p) < 0.0016) return;    // only real movement
+  trailPts.push(p.clone());
+  if (trailPts.length > TRAIL_MAX) trailPts.shift();
+  const arr = trailGeom.attributes.position.array;
+  for (let i = 0; i < trailPts.length; i++) {
+    arr[i * 3] = trailPts[i].x; arr[i * 3 + 1] = trailPts[i].y; arr[i * 3 + 2] = trailPts[i].z;
+  }
+  trailGeom.setDrawRange(0, trailPts.length);
+  trailGeom.attributes.position.needsUpdate = true;
+  trailGeom.computeBoundingSphere();
+}
 
 // ------------------------------------------------------------- axis gizmo ---
 const gizmoScene = new THREE.Scene();
@@ -674,9 +950,16 @@ function axisArrow(dir, color) {
 gizmoScene.add(axisArrow("x", 0xc0392b), axisArrow("y", 0x2e7d43), axisArrow("z", 0x2e5fb8));
 
 // ================================================================ orbit camera
-const HOME_VIEW = { theta: 0.85, phi: 1.12, dist: 9.5, target: new THREE.Vector3(0, 2.1, 0) };
-let camTheta = HOME_VIEW.theta, camPhi = HOME_VIEW.phi, camDist = HOME_VIEW.dist;
-const camTarget = HOME_VIEW.target.clone();
+const VIEWS = {
+  iso:   { theta: 0.85, phi: 1.12, dist: 9.5,  target: [0, 2.1, 0] },
+  front: { theta: Math.PI / 2, phi: 1.42, dist: 9.0, target: [0, 2.2, 0] },
+  side:  { theta: 0, phi: 1.42, dist: 9.0, target: [0, 2.2, 0] },
+  top:   { theta: Math.PI / 2, phi: 0.22, dist: 9.5, target: [0, 1.4, 0] },
+};
+let camTheta = VIEWS.iso.theta, camPhi = VIEWS.iso.phi, camDist = VIEWS.iso.dist;
+const camTarget = new THREE.Vector3(0, 2.1, 0);
+let camTween = null;                 // {from, to, t0, ms}
+let lastInteraction = performance.now();
 
 function updateCamera() {
   camPhi = Math.max(0.12, Math.min(Math.PI / 2 - 0.02, camPhi));
@@ -688,10 +971,39 @@ function updateCamera() {
   );
   camera.lookAt(camTarget);
 }
+function goToView(name) {
+  const v = VIEWS[name];
+  if (!v) return;
+  camTween = {
+    t0: performance.now(), ms: 700,
+    from: { theta: camTheta, phi: camPhi, dist: camDist, target: camTarget.clone() },
+    to: { theta: v.theta, phi: v.phi, dist: v.dist, target: new THREE.Vector3(...v.target) },
+  };
+  lastInteraction = performance.now();
+}
+function stepCamTween(now) {
+  if (!camTween) return;
+  const p = Math.min(1, (now - camTween.t0) / camTween.ms);
+  const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+  const { from, to } = camTween;
+  // take the short way round the circle
+  let d = to.theta - from.theta;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  camTheta = from.theta + d * e;
+  camPhi = from.phi + (to.phi - from.phi) * e;
+  camDist = from.dist + (to.dist - from.dist) * e;
+  camTarget.lerpVectors(from.target, to.target, e);
+  updateCamera();
+  if (p >= 1) camTween = null;
+}
+
 let drag = null;
+function noteInteraction() { lastInteraction = performance.now(); camTween = null; }
 canvas.addEventListener("pointerdown", e => {
   drag = { x: e.clientX, y: e.clientY, btn: e.button };
   canvas.setPointerCapture(e.pointerId);
+  noteInteraction();
 });
 canvas.addEventListener("pointerup", e => { drag = null; canvas.releasePointerCapture(e.pointerId); });
 canvas.addEventListener("pointermove", e => {
@@ -705,20 +1017,17 @@ canvas.addEventListener("pointermove", e => {
     camTheta += dx * 0.007;
     camPhi -= dy * 0.007;
   }
+  noteInteraction();
   updateCamera();
 });
 canvas.addEventListener("wheel", e => {
   e.preventDefault();
   camDist *= 1 + Math.sign(e.deltaY) * 0.1;
+  noteInteraction();
   updateCamera();
 }, { passive: false });
 canvas.addEventListener("contextmenu", e => e.preventDefault());
-
-document.getElementById("resetView").onclick = () => {
-  camTheta = HOME_VIEW.theta; camPhi = HOME_VIEW.phi; camDist = HOME_VIEW.dist;
-  camTarget.copy(HOME_VIEW.target);
-  updateCamera();
-};
+document.querySelectorAll("[data-view]").forEach(b => { b.onclick = () => goToView(b.dataset.view); });
 
 function resize() {
   const w = vp.clientWidth, h = vp.clientHeight;
@@ -732,8 +1041,8 @@ resize();
 updateCamera();
 
 // ================================================================== arm state
-const target = { ...REST_POSE };
-const shown = { ...target };
+const target = { ...REST_POSE };     // what the arm has been told to do
+const shown = { ...target };         // what it reports, eased for display
 let baseAngleDeg = 0, baseDir = 0, baseSpeedPct = 50;
 
 const rad = d => d * Math.PI / 180;
@@ -742,6 +1051,22 @@ const jointRad = (name, deg) =>
 
 const worldTmp = new THREE.Vector3();
 let lastFrame = performance.now(), fpsAccum = 0, fpsFrames = 0;
+
+/** Drive one arm instance from a set of servo angles. */
+function poseArm(A, a) {
+  A.shoulder.rotation.z   = jointRad("shoulder",   a.shoulder);
+  A.elbow.rotation.z      = jointRad("elbow",      a.elbow);
+  A.wristPitch.rotation.z = jointRad("wristPitch", a.wristPitch);
+  A.wristRoll.rotation.y  = jointRad("wristRoll",  a.wristRoll);
+
+  let t = Math.max(0, Math.min(1, (a.gripper - GRIP_OPEN) / (GRIP_CLOSED - GRIP_OPEN)));
+  if (JOINTS.gripper.invert) t = 1 - t;
+  const jaw = 0.5 * (1 - t);
+  A.fingerL.rotation.z = jaw;
+  A.fingerR.rotation.z = -jaw;
+  A.jawL.rotation.z = -jaw;          // parallelogram: the jaws stay upright
+  A.jawR.rotation.z = jaw;
+}
 
 function animate(now) {
   requestAnimationFrame(animate);
@@ -755,20 +1080,27 @@ function frame(now) {
   for (const k in shown) shown[k] += (target[k] - shown[k]) * SMOOTH;
 
   baseAngleDeg += baseDir * baseDegPerSec * (baseSpeedPct / 100) * dt;
-  baseYaw.rotation.y = rad(-baseAngleDeg * (BASE_CAL.invert ? -1 : 1) + BASE_CAL.offset);
+  const baseRot = rad(-baseAngleDeg * (BASE_CAL.invert ? -1 : 1) + BASE_CAL.offset);
+  ARM.baseYaw.rotation.y = baseRot;
+  GH.baseYaw.rotation.y = baseRot;
 
-  shoulder.rotation.z   = jointRad("shoulder",   shown.shoulder);
-  elbow.rotation.z      = jointRad("elbow",      shown.elbow);
-  wristPitch.rotation.z = jointRad("wristPitch", shown.wristPitch);
-  wristRoll.rotation.y  = jointRad("wristRoll",  shown.wristRoll);
+  poseArm(ARM, shown);
+  poseArm(GH, target);
 
-  let t = Math.max(0, Math.min(1, (shown.gripper - GRIP_OPEN) / (GRIP_CLOSED - GRIP_OPEN)));
-  if (JOINTS.gripper.invert) t = 1 - t;        // jaws opposite to the real claw
-  const jaw = 0.5 * (1 - t);
-  fingerL.rotation.z = jaw;
-  fingerR.rotation.z = -jaw;
-  jawL.rotation.z = -jaw;          // parallelogram: the jaws stay upright
-  jawR.rotation.z = jaw;
+  // joint arcs follow the calibration, so they are rebuilt lazily
+  for (const a of arcs) {
+    a.holder.rotation.z = -a.joint.rotation.z;   // hold still in the parent frame
+  }
+
+  ARM.tcp.getWorldPosition(worldTmp);
+  if (opts.trail) pushTrail(worldTmp);
+
+  stepCamTween(now);
+  if (opts.orbit && presenting && !drag && !camTween &&
+      now - lastInteraction > 6000) {
+    camTheta += 0.055 * dt;
+    updateCamera();
+  }
 
   render();
   refreshReadouts();
@@ -776,6 +1108,10 @@ function frame(now) {
   fpsAccum += dt; fpsFrames++;
   if (fpsAccum >= 0.5) {
     sbFps.textContent = Math.round(fpsFrames / fpsAccum);
+    msgRate = Math.round(msgCount / fpsAccum);
+    msgCount = 0;
+    sbRate.textContent = msgRate;
+    stageRate.textContent = msgRate;
     fpsAccum = 0; fpsFrames = 0;
   }
 }
@@ -787,20 +1123,24 @@ function render() {
   renderer.clear();
   renderer.render(scene, camera);
 
-  const s = 78, m = 14;                       // axis gizmo, bottom-left of the viewport
-  renderer.setViewport(m, m, s, s);
-  renderer.setScissor(m, m, s, s);
-  renderer.setScissorTest(true);
-  renderer.clearDepth();
-  gizmoCam.position.copy(camera.position).sub(camTarget).setLength(6);
-  gizmoCam.lookAt(0, 0, 0);
-  renderer.render(gizmoScene, gizmoCam);
-  renderer.setScissorTest(false);
+  if (!presenting) {                          // axis gizmo, bottom-left
+    const s = 78, m = 14;
+    renderer.setViewport(m, m, s, s);
+    renderer.setScissor(m, m, s, s);
+    renderer.setScissorTest(true);
+    renderer.clearDepth();
+    gizmoCam.position.copy(camera.position).sub(camTarget).setLength(6);
+    gizmoCam.lookAt(0, 0, 0);
+    renderer.render(gizmoScene, gizmoCam);
+    renderer.setScissorTest(false);
+  }
 }
 
 // ========================================================== inspector wiring
 const linkChip = document.getElementById("linkChip");
 const linkText = document.getElementById("linkText");
+const stageChip = document.getElementById("stageChip");
+const stageLink = document.getElementById("stageLink");
 const offlineBanner = document.getElementById("offlineBanner");
 const activityEl = document.getElementById("activity");
 const gripStateEl = document.getElementById("gripState");
@@ -811,12 +1151,68 @@ const sbGrip = document.getElementById("sbGrip");
 const sbHeight = document.getElementById("sbHeight");
 const sbLink = document.getElementById("sbLink");
 const sbFps = document.getElementById("sbFps");
+const sbRtt = document.getElementById("sbRtt");
+const sbRate = document.getElementById("sbRate");
+const stageRtt = document.getElementById("stageRtt");
+const stageRate = document.getElementById("stageRate");
+const stageAction = document.getElementById("stageAction");
+const stageJoints = document.getElementById("stageJoints");
+const latencyLabel = document.getElementById("latencyLabel");
 const gatedEls = [...document.querySelectorAll(".gated")];
 
+let msgCount = 0, msgRate = 0;
+let pendingCmdAt = 0, rttMs = null;
+
 function pub(topic, payload) {
-  if (client && client.connected) client.publish(topic, String(payload));
+  if (!client || !client.connected) return;
+  client.publish(topic, String(payload));
+  flowPulse("out");
+  tick("out", topic, payload);
+  pendingCmdAt = performance.now();      // the arm's log reply closes the loop
 }
 const pad = (n, w = 5) => n.toFixed(1).padStart(w, "0");
+
+// ------------------------------------------------------------- data flow ---
+const FLOWS = [...document.querySelectorAll(".flow")];
+const NODE_ORDER = ["browser", "broker", "esp32", "servos"];
+function flowPulse(dir) {
+  msgCount++;
+  for (const flow of FLOWS) {
+    const tracks = [...flow.querySelectorAll(".track")];
+    const nodes = [...flow.querySelectorAll(".node")];
+    const seq = dir === "out" ? [0, 1, 2] : [2, 1, 0];
+    seq.forEach((idx, step) => {
+      setTimeout(() => {
+        const pip = document.createElement("span");
+        pip.className = "pip";
+        pip.style.animation = (dir === "out" ? "pipFwd" : "pipBack") + " .26s linear forwards";
+        tracks[idx].appendChild(pip);
+        setTimeout(() => pip.remove(), 300);
+        const litIdx = dir === "out" ? idx + 1 : idx;
+        const node = nodes[litIdx];
+        if (node) {
+          node.classList.add("lit");
+          setTimeout(() => node.classList.remove("lit"), 260);
+        }
+      }, step * 120);
+    });
+  }
+}
+
+// --------------------------------------------------------------- ticker ----
+const tickerEl = document.getElementById("ticker");
+const stageTickerBody = document.getElementById("stageTickerBody");
+const tickLines = [];
+function tick(dir, topic, payload) {
+  const arrow = dir === "out" ? "&rarr;" : "&larr;";
+  const txt = String(payload);
+  tickLines.unshift('<span class="t-' + dir + '">' + arrow + ' <b>' + topic + '</b> ' +
+                    (txt.length > 34 ? txt.slice(0, 34) + "…" : txt) + "</span>");
+  if (tickLines.length > 8) tickLines.pop();
+  const html = tickLines.join("<br>");
+  tickerEl.innerHTML = html;
+  stageTickerBody.innerHTML = tickLines.slice(0, 6).join("<br>");
+}
 
 // ---- joint rows: each shows the live angle and commands the arm
 const jointUI = {};
@@ -850,7 +1246,6 @@ for (const [name, j] of Object.entries(JOINTS)) {
     push(false);
   });
   slider.addEventListener("change", () => push(true));
-
   num.addEventListener("focus", () => { ui.typing = true; });
   num.addEventListener("blur", () => { ui.typing = false; });
   num.addEventListener("change", () => {
@@ -860,6 +1255,21 @@ for (const [name, j] of Object.entries(JOINTS)) {
   });
   jointRows.appendChild(row);
 }
+
+// ---- big readouts on the presentation stage
+const stageCells = {};
+for (const [name, j] of Object.entries(JOINTS)) {
+  const d = document.createElement("div");
+  d.className = "sj";
+  d.innerHTML = "<k>" + j.axis + " " + j.label + "</k><v>--</v>";
+  stageJoints.appendChild(d);
+  stageCells[name] = d.querySelector("v");
+}
+const baseCell = document.createElement("div");
+baseCell.className = "sj";
+baseCell.innerHTML = "<k>J0 base</k><v>--</v>";
+stageJoints.appendChild(baseCell);
+const stageBaseVal = baseCell.querySelector("v");
 
 document.querySelectorAll("[data-grip]").forEach(b => {
   b.onclick = () => pub("arm/servo/" + JOINTS.gripper.ch, b.dataset.grip === "open" ? GRIP_OPEN : GRIP_CLOSED);
@@ -892,6 +1302,7 @@ document.querySelectorAll(".tab").forEach(t => {
   t.onclick = () => {
     document.querySelectorAll(".tab").forEach(x => x.classList.toggle("is-on", x === t));
     document.getElementById("paneControl").hidden = t.dataset.tab !== "control";
+    document.getElementById("paneDisplay").hidden = t.dataset.tab !== "display";
     document.getElementById("paneCalibrate").hidden = t.dataset.tab !== "calibrate";
   };
 });
@@ -903,6 +1314,7 @@ function refreshReadouts() {
     const deg = Math.round(target[name]);
     if (!ui.dragging) ui.slider.value = deg;
     if (!ui.dragging && !ui.typing) ui.num.value = deg;
+    stageCells[name].textContent = deg + "°";
   }
   const dirWord = baseDir > 0 ? "CW" : baseDir < 0 ? "CCW" : "idle";
   const stalled = baseDir !== 0 && baseSpeedPct === 0;
@@ -911,92 +1323,15 @@ function refreshReadouts() {
   baseStateEl.textContent = stalled ? "commanded, speed 0" : dirWord;
   baseStateEl.style.color = stalled ? "var(--stop)" : "";
   sbBase.textContent = pad(deg) + "°" + (baseDir ? (baseDir > 0 ? " ↻" : " ↺") : "");
+  stageBaseVal.textContent = Math.round(deg) + "°";
   sbSpeed.textContent = String(Math.round(baseSpeedPct)).padStart(3, "0") + "%";
   sbSpeed.parentElement.classList.toggle("alert", stalled);
 
   const closed = shown.gripper > (GRIP_OPEN + GRIP_CLOSED) / 2;
   gripStateEl.textContent = closed ? "closed" : "open";
   sbGrip.textContent = closed ? "CLOSED" : "OPEN";
-
-  tcp.getWorldPosition(worldTmp);
   sbHeight.textContent = worldTmp.y.toFixed(2);
 }
-
-// ================================================================ demo mode
-// Wrist and gripper moves are sent as a single setpoint and run at the arm's
-// normal speed. The base is the only axis deliberately slowed, and it always
-// returns to the angle it started from.
-const demoStateEl = document.getElementById("demoState");
-let demoToken = 0;                       // bumping this cancels a running demo
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-/** sleep that gives up early when the demo is cancelled */
-async function waitWhile(ms, alive) {
-  const end = performance.now() + ms;
-  while (alive() && performance.now() < end) await sleep(40);
-}
-
-/** One wrist / gripper move: normal speed, just send the setpoint. */
-async function moveJoint(name, to, alive) {
-  target[name] = to;
-  pub("arm/servo/" + JOINTS[name].ch, to);
-  await waitWhile(DEMO.jointPauseSeconds * 1000, alive);
-}
-
-/** Base: out by baseSweepDeg, hold, then the same amount back to the start. */
-async function sweepBaseAndReturn(alive) {
-  const rate = baseDegPerSec * (DEMO.baseSpeedPct / 100);      // degrees per second
-  const runMs = (DEMO.baseSweepDeg / Math.max(rate, 1)) * 1000;
-
-  setSpeedUI(DEMO.baseSpeedPct);
-  pub("arm/base/speed", DEMO.baseSpeedPct);
-  await sleep(120);                       // let the speed land before moving
-
-  for (const dir of ["cw", "ccw"]) {
-    if (!alive()) return;
-    demoStateEl.textContent = dir === "cw" ? "base +" + DEMO.baseSweepDeg + " deg"
-                                           : "base back to start";
-    pub("arm/base", dir);
-    await waitWhile(dir === "cw" ? runMs : runMs * DEMO.returnFactor, alive);
-    pub("arm/base", "stop");              // sent even when cancelled mid-run
-    if (dir === "cw") await waitWhile(DEMO.baseHoldSeconds * 1000, alive);
-  }
-}
-
-function stopDemo(reason) {
-  demoToken++;                            // invalidates any running sequence
-  pub("arm/base", "stop");
-  demoStateEl.textContent = reason || "stopped";
-  demoStateEl.style.color = "";
-}
-
-async function runDemo() {
-  if (!client || !client.connected) { addLog("demo needs a broker link"); return; }
-  const my = ++demoToken;
-  const alive = () => my === demoToken;
-  addLog("demo started");
-  demoStateEl.style.color = "var(--accent)";
-
-  try {
-    do {
-      for (let i = 0; i < DEMO.steps.length; i++) {
-        if (!alive()) return;
-        const step = DEMO.steps[i];
-        demoStateEl.textContent = (i + 1) + "/" + DEMO.steps.length + "  " + step.say;
-        if (step.baseSweep) await sweepBaseAndReturn(alive);
-        else await moveJoint(step.joint, step.to, alive);
-      }
-    } while (DEMO.loop && alive());
-  } finally {
-    if (alive()) { pub("arm/base", "stop"); stopDemo("finished"); addLog("demo finished"); }
-  }
-}
-
-document.getElementById("demoRun").onclick = runDemo;
-document.getElementById("demoStop").onclick = () => { stopDemo("stopped"); addLog("demo stopped"); };
-// never leave the base spinning if the page is closed or the link drops
-addEventListener("beforeunload", () => stopDemo());
 
 const logLines = [];
 function addLog(text) {
@@ -1007,14 +1342,74 @@ function addLog(text) {
 
 function setStatus(ok, text, showHelp) {
   linkChip.classList.toggle("on", ok);
+  stageChip.classList.toggle("on", ok);
   linkText.textContent = text.toUpperCase();
+  stageLink.textContent = text.toUpperCase();
   sbLink.textContent = text;
   gatedEls.forEach(el => el.classList.toggle("is-locked", !ok));
   offlineBanner.hidden = !showHelp;
+  if (!ok) setAction("status", text);
 }
+
+/** The single line the audience reads. */
+function setAction(kind, text) {
+  stageAction.innerHTML = "<small>" + kind + "</small>" + text;
+}
+
+// ============================================================ display opts
+const opts = { ghost: true, trail: true, arcs: false, orbit: true };
+function applyOpts() {
+  GH.root.visible = opts.ghost;
+  trail.visible = opts.trail;
+  arcGroup.visible = opts.arcs;
+  for (const a of arcs) { a.holder.visible = opts.arcs; a.needle.visible = opts.arcs; }
+  if (!opts.trail) { trailPts.length = 0; trailGeom.setDrawRange(0, 0); }
+  optGhost.checked = opts.ghost; optTrail.checked = opts.trail;
+  optArcs.checked = opts.arcs;   optOrbit.checked = opts.orbit;
+}
+const optGhost = document.getElementById("optGhost");
+const optTrail = document.getElementById("optTrail");
+const optArcs = document.getElementById("optArcs");
+const optOrbit = document.getElementById("optOrbit");
+optGhost.onchange = () => { opts.ghost = optGhost.checked; applyOpts(); };
+optTrail.onchange = () => { opts.trail = optTrail.checked; applyOpts(); };
+optArcs.onchange = () => { opts.arcs = optArcs.checked; applyOpts(); };
+optOrbit.onchange = () => { opts.orbit = optOrbit.checked; };
+
+// ======================================================== presentation mode
+let presenting = false;
+function setPresenting(on) {
+  presenting = on;
+  document.body.classList.toggle("present", on);
+  lastInteraction = performance.now();
+  setTimeout(resize, 60);                 // the viewport grid cell just changed
+  if (on) { goToView("iso"); renderQR(); }
+}
+document.getElementById("presentBtn").onclick = () => setPresenting(!presenting);
+document.getElementById("presentBtn2").onclick = () => setPresenting(true);
+
+// ------------------------------------------------------------------- QR ----
+const qrUrlEl = document.getElementById("qrUrl");
+let qrObj = null;
+function renderQR() {
+  const box = document.getElementById("qrBox");
+  const url = qrUrlEl.value.trim();
+  if (!url || typeof QRCode === "undefined") { box.innerHTML = ""; return; }
+  box.innerHTML = "";
+  try {
+    qrObj = new QRCode(box, { text: url, width: 84, height: 84,
+                              colorDark: "#14181d", colorLight: "#ffffff" });
+  } catch (e) { box.innerHTML = ""; }
+}
+qrUrlEl.addEventListener("change", () => {
+  try { localStorage.setItem("arm3d-qr", qrUrlEl.value.trim()); } catch (e) { /* ignore */ }
+  renderQR();
+});
 
 // ============================================================== calibration
 const CAL_KEY = "arm3d-calibration-v4";
+const BASE_TRIM_DEFAULT = 307;
+let baseTrim = BASE_TRIM_DEFAULT;
 const CAL_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(
   [...Object.entries(JOINTS), ["base", BASE_CAL]].map(([k, v]) => [k, { invert: v.invert, offset: v.offset }]))));
 
@@ -1035,6 +1430,8 @@ function saveCal() {
   out.baseRate = baseDegPerSec;
   out.baseTrim = baseTrim;
   try { localStorage.setItem(CAL_KEY, JSON.stringify(out)); } catch (e) { /* private mode */ }
+  buildArcs();
+  applyOpts();
 }
 
 const calRows = document.getElementById("calRows");
@@ -1062,16 +1459,14 @@ for (const [name, j] of [...Object.entries(JOINTS), ["base", BASE_CAL]]) {
 const baseRateEl = document.getElementById("baseRate");
 const baseRateNum = document.getElementById("baseRateNum");
 function setBaseRateUI(v) {
-  baseDegPerSec = Math.max(2, Math.min(360, Number(v) || 90));
+  baseDegPerSec = Math.max(2, Math.min(360, Number(v) || 15));
   baseRateEl.value = baseDegPerSec;
   baseRateNum.value = baseDegPerSec;
 }
 baseRateEl.addEventListener("input", () => { setBaseRateUI(baseRateEl.value); saveCal(); });
 baseRateNum.addEventListener("change", () => { setBaseRateUI(baseRateNum.value); saveCal(); });
-setBaseRateUI(baseDegPerSec);          // reflect whatever was loaded from storage
+setBaseRateUI(baseDegPerSec);
 
-const BASE_TRIM_DEFAULT = 307;
-let baseTrim = BASE_TRIM_DEFAULT;
 const baseTrimEl = document.getElementById("baseTrim");
 const baseTrimNum = document.getElementById("baseTrimNum");
 function setBaseTrimUI(v, send) {
@@ -1083,7 +1478,7 @@ function setBaseTrimUI(v, send) {
 baseTrimEl.addEventListener("input", () => setBaseTrimUI(baseTrimEl.value, false));
 baseTrimEl.addEventListener("change", () => { setBaseTrimUI(baseTrimEl.value, true); saveCal(); });
 baseTrimNum.addEventListener("change", () => { setBaseTrimUI(baseTrimNum.value, true); saveCal(); });
-setBaseTrimUI(baseTrim, false);        // reflect whatever was loaded from storage
+setBaseTrimUI(baseTrim, false);
 
 document.getElementById("calReset").onclick = () => {
   for (const [name, ui] of Object.entries(calUI)) {
@@ -1102,7 +1497,8 @@ document.getElementById("calCopy").onclick = () => {
     "  " + (n + ":").padEnd(12) + "{ ch: " + j.ch + ', axis: "' + j.axis + '", label: "' + j.label +
     '", invert: ' + j.invert + ", offset: " + j.offset + " },");
   const text = "const JOINTS = {\n" + lines.join("\n") + "\n};\n" +
-    'const BASE_CAL = { axis: "J0", label: "base", invert: ' + BASE_CAL.invert + ", offset: " + BASE_CAL.offset + " };";
+    'const BASE_CAL = { axis: "J0", label: "base", invert: ' + BASE_CAL.invert + ", offset: " + BASE_CAL.offset + " };\n" +
+    "let baseDegPerSec = " + baseDegPerSec + ";";
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text)
       .then(() => addLog("calibration copied to the clipboard"))
@@ -1111,6 +1507,102 @@ document.getElementById("calCopy").onclick = () => {
     addLog(text);
   }
 };
+
+buildArcs();
+applyOpts();
+
+// ================================================================ demo mode
+// Wrist and gripper moves are sent as a single setpoint and run at the arm's
+// normal speed. The base is the only axis deliberately slowed, and it always
+// returns to the angle it started from.
+const demoStateEl = document.getElementById("demoState");
+let demoToken = 0;                       // bumping this cancels a running demo
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function waitWhile(ms, alive) {
+  const end = performance.now() + ms;
+  while (alive() && performance.now() < end) await sleep(40);
+}
+
+async function moveJoint(name, to, alive) {
+  target[name] = to;
+  pub("arm/servo/" + JOINTS[name].ch, to);
+  await waitWhile(DEMO.jointPauseSeconds * 1000, alive);
+}
+
+/** Base: out by baseSweepDeg, hold, then the same amount back to the start. */
+async function sweepBaseAndReturn(alive) {
+  const rate = baseDegPerSec * (DEMO.baseSpeedPct / 100);
+  const runMs = (DEMO.baseSweepDeg / Math.max(rate, 1)) * 1000;
+
+  setSpeedUI(DEMO.baseSpeedPct);
+  pub("arm/base/speed", DEMO.baseSpeedPct);
+  await sleep(120);
+
+  for (const dir of ["cw", "ccw"]) {
+    if (!alive()) return;
+    setAction("demo", dir === "cw" ? "Rotating the base +" + DEMO.baseSweepDeg + "°"
+                                   : "Returning the base to its start");
+    pub("arm/base", dir);
+    await waitWhile(dir === "cw" ? runMs : runMs * DEMO.returnFactor, alive);
+    pub("arm/base", "stop");
+    if (dir === "cw") await waitWhile(DEMO.baseHoldSeconds * 1000, alive);
+  }
+}
+
+function stopDemo(reason) {
+  demoToken++;
+  pub("arm/base", "stop");
+  demoStateEl.textContent = reason || "stopped";
+  demoStateEl.style.color = "";
+  setAction("status", reason === "finished" ? "Demo finished" : "Ready");
+}
+
+async function runDemo() {
+  if (!client || !client.connected) { addLog("demo needs a broker link"); return; }
+  const my = ++demoToken;
+  const alive = () => my === demoToken;
+  addLog("demo started");
+  demoStateEl.style.color = "var(--accent)";
+
+  try {
+    do {
+      for (let i = 0; i < DEMO.steps.length; i++) {
+        if (!alive()) return;
+        const step = DEMO.steps[i];
+        demoStateEl.textContent = (i + 1) + "/" + DEMO.steps.length;
+        setAction("demo step " + (i + 1) + " of " + DEMO.steps.length, step.say);
+        if (step.baseSweep) await sweepBaseAndReturn(alive);
+        else await moveJoint(step.joint, step.to, alive);
+      }
+    } while (DEMO.loop && alive());
+  } finally {
+    if (alive()) { pub("arm/base", "stop"); stopDemo("finished"); addLog("demo finished"); }
+  }
+}
+
+document.getElementById("demoRun").onclick = runDemo;
+document.getElementById("demoStop").onclick = () => { stopDemo("stopped"); addLog("demo stopped"); };
+addEventListener("beforeunload", () => stopDemo());
+
+// ============================================================== shortcuts
+addEventListener("keydown", e => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+  const k = e.key.toLowerCase();
+  if (k === "p") { setPresenting(!presenting); e.preventDefault(); }
+  else if (k === "escape" && presenting) setPresenting(false);
+  else if (k === "d") runDemo();
+  else if (k === " ") { stopDemo("stopped"); e.preventDefault(); }
+  else if (k === "h") pub("arm/home", 1);
+  else if (k === "1") goToView("front");
+  else if (k === "2") goToView("side");
+  else if (k === "3") goToView("top");
+  else if (k === "4") goToView("iso");
+  else if (k === "r") goToView("iso");
+  else if (k === "g") { opts.ghost = !opts.ghost; applyOpts(); }
+  else if (k === "t") { opts.trail = !opts.trail; applyOpts(); }
+});
 
 // ====================================================================== MQTT
 let client = null;
@@ -1126,6 +1618,7 @@ function connect(host) {
 
   client.on("connect", () => {
     setStatus(true, "linked", false);
+    setAction("status", "Ready");
     client.subscribe(["arm/state", "arm/status", "arm/log", "arm/base", "arm/base/speed"]);
     pub("arm/base/speed", baseSpeedEl.value);
     pub("arm/base/trim", baseTrim);          // the controller forgets this on reboot
@@ -1134,6 +1627,9 @@ function connect(host) {
 
   client.on("message", (topic, buf) => {
     const payload = buf.toString();
+    flowPulse("in");
+    if (topic !== "arm/state") tick("in", topic, payload);
+
     if (topic === "arm/state") {
       let s;
       try { s = JSON.parse(payload); } catch (e) { return; }
@@ -1149,6 +1645,13 @@ function connect(host) {
       setSpeedUI(Number(payload));
     } else if (topic === "arm/log") {
       addLog(payload);
+      if (pendingCmdAt) {                    // browser -> broker -> ESP32 -> back
+        rttMs = Math.round(performance.now() - pendingCmdAt);
+        pendingCmdAt = 0;
+        sbRtt.textContent = rttMs + " ms";
+        stageRtt.textContent = rttMs + " ms";
+        latencyLabel.textContent = "round trip " + rttMs + " ms";
+      }
     }
   });
 
@@ -1160,11 +1663,20 @@ const hostInput = document.getElementById("host");
 hostInput.value = new URLSearchParams(location.search).get("host")
   || (function () { try { return localStorage.getItem("arm3d-host"); } catch (e) { return null; } })()
   || (location.hostname && location.protocol !== "file:" ? location.hostname : "192.168.1.194");
+
+qrUrlEl.value = (function () { try { return localStorage.getItem("arm3d-qr"); } catch (e) { return null; } })()
+  || "http://" + hostInput.value + ":1880/ui";
+
 document.getElementById("go").onclick = () => connect(hostInput.value.trim());
 hostInput.addEventListener("keydown", e => { if (e.key === "Enter") connect(hostInput.value.trim()); });
 
 requestAnimationFrame(animate);
 connect(hostInput.value.trim());
+
+// arm3d.html?present=1 opens straight into presentation mode, for a second
+// screen or a kiosk display that nobody has to set up by hand.
+if (new URLSearchParams(location.search).get("present") === "1") setPresenting(true);
+renderQR();
 </script>
 </body>
 </html>

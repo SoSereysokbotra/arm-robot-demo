@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <Preferences.h>
+#include <WiFiManager.h>
 #include "MqttControl.h"
 #include "Servos.h"
 #include "Config.h"
@@ -18,6 +20,11 @@ static const char* T_HOME       = MQTT_BASE_TOPIC "/home";        // any payload
 
 static WiFiClient wifiClient;
 static PubSubClient mqtt(wifiClient);
+
+// Wi-Fi credentials and the broker address are stored on the ESP32 itself, so
+// moving to a different network needs no reflash - see openSetupPortal().
+static Preferences prefs;
+static String brokerHost = MQTT_HOST;      // Secrets.h value is just the default
 
 static int baseSpeedPercent = 60;          // remembered between cw/ccw commands
 static unsigned long lastReconnectAttempt = 0;
@@ -105,7 +112,7 @@ static void onMessage(char* topicC, byte* payloadB, unsigned int len) {
 
 // ---------- Connection management (non-blocking) ----------
 static bool mqttReconnect() {
-  Serial.print("Connecting to MQTT broker " MQTT_HOST "... ");
+  Serial.print("Connecting to MQTT broker " + brokerHost + "... ");
   // Last Will: broker publishes "offline" if the ESP32 disappears
   bool ok = mqtt.connect(MQTT_CLIENT_ID, T_STATUS, 0, true, "offline");
   if (!ok) {
@@ -125,17 +132,75 @@ static bool mqttReconnect() {
   return true;
 }
 
-void mqttSetup() {
-  WiFi.mode(WIFI_STA);
-  WiFi.setAutoReconnect(true);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.println("Connecting to Wi-Fi \"" WIFI_SSID "\"...");
+// Blocks in a captive portal so the network and broker can be set from a phone.
+// Reached only when the arm cannot get online on its own, or on a forced reset.
+static void openSetupPortal(bool forget) {
+  WiFiManager wm;
+  if (forget) {
+    Serial.println("Portal forced - clearing stored Wi-Fi credentials.");
+    wm.resetSettings();
+  }
 
-  mqtt.setServer(MQTT_HOST, MQTT_PORT);
+  char hostBuf[40];
+  brokerHost.toCharArray(hostBuf, sizeof(hostBuf));
+  WiFiManagerParameter brokerField("broker", "MQTT broker IP (your PC)", hostBuf, sizeof(hostBuf) - 1);
+  wm.addParameter(&brokerField);
+
+  wm.setConfigPortalTimeout(PORTAL_TIMEOUT_S);
+  wm.setBreakAfterConfig(true);          // keep whatever was typed even if Wi-Fi fails
+
+  Serial.println("Starting setup portal: join Wi-Fi \"" + String(PORTAL_AP_NAME) +
+                 "\" (password " + String(PORTAL_AP_PASS) + ") and open http://192.168.4.1");
+  digitalWrite(STATUS_LED, HIGH);        // solid LED = waiting for setup
+  wm.autoConnect(PORTAL_AP_NAME, PORTAL_AP_PASS);
+  digitalWrite(STATUS_LED, LOW);
+
+  String typed = brokerField.getValue();
+  typed.trim();
+  if (typed.length() && typed != brokerHost) {
+    brokerHost = typed;
+    prefs.putString("broker", brokerHost);
+    Serial.println("Broker saved: " + brokerHost);
+  }
+}
+
+void mqttSetup() {
+  prefs.begin("arm", false);
+  brokerHost = prefs.getString("broker", MQTT_HOST);
+
   mqtt.setCallback(onMessage);
   mqtt.setBufferSize(512);
-
   for (int ch = 0; ch < TOTAL_SERVOS; ch++) lastPublishedAngle[ch] = -1;
+
+  pinMode(PORTAL_BUTTON, INPUT_PULLUP);
+  bool forcePortal = (digitalRead(PORTAL_BUTTON) == LOW);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
+
+  if (!forcePortal) {
+    // First try the network baked into Secrets.h, so a known setup just works.
+    Serial.println("Connecting to Wi-Fi \"" WIFI_SSID "\"...");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    unsigned long start = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 12000) {
+      stepServos();                      // keep the easing alive while we wait
+      delay(10);
+    }
+  }
+
+  if (forcePortal || WiFi.status() != WL_CONNECTED) {
+    // Hand a clean radio to WiFiManager: a half-finished connect attempt makes
+    // its own WiFi.begin() fail instantly with "sta is connecting".
+    Serial.println("Wi-Fi join failed (status " + String(WiFi.status()) +
+                   "). Note: the ESP32 is 2.4 GHz only - it cannot see 5 GHz networks.");
+    WiFi.disconnect(true, false);
+    delay(300);
+    openSetupPortal(forcePortal);        // phone -> ArmRobot-Setup -> 192.168.4.1
+  }
+
+  mqtt.setServer(brokerHost.c_str(), MQTT_PORT);
+  Serial.println("Broker address: " + brokerHost);
 }
 
 void mqttLoop() {
