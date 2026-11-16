@@ -6,6 +6,16 @@
 // and fill it in. It defines WIFI_SSID, WIFI_PASSWORD and MQTT_HOST.
 #include "Secrets.h"
 
+#ifndef USE_AP_MODE
+#define USE_AP_MODE 0
+#endif
+
+// Access-point mode: the arm is the network. Whichever machine runs Mosquitto
+// joins this hotspot; the arm looks for the broker among the first few
+// addresses it hands out, so no IP has to be configured anywhere.
+const char* const ARM_AP_NAME = "RobotArm";
+const char* const ARM_AP_PASS = "robotarm123";   // >= 8 characters
+
 // ---------- MQTT broker ----------
 #define MQTT_PORT      1883
 #define MQTT_CLIENT_ID "robot-arm-esp32"
@@ -15,8 +25,12 @@
 
 // PCA9685 Settings
 #define SERVO_FREQ 50
-const int SERVOMIN = 150;
-const int SERVOMAX = 600;
+// 600..2400 us - what a hobby servo actually accepts. The old 150..600 meant
+// 732..2930 us, so anything above about 137 degrees sat past the end stop:
+// different recorded angles replayed to the same place, which looked like
+// steps being skipped.
+const int SERVOMIN = 123;   // ~600 us
+const int SERVOMAX = 492;   // ~2400 us
 const int TOTAL_SERVOS = 6;
 
 const int BASE_SERVO = 0;
@@ -34,7 +48,9 @@ const int BASE_PULSE_SPAN = 110;   // ~+/-537 us at 100 % - full speed either wa
 // CH0 is the continuous-rotation base (value unused, kept for alignment).
 //                              CH0  CH1       CH2    CH3      CH4     CH5
 //                              base shoulder elbow  wristP   wristR  gripper
-const int HOME_POSE[TOTAL_SERVOS] = { 90, 151,     153,   54,      57,     90 };
+// Same physical startup pose as before, renumbered for the corrected map.
+// CH1 and CH2 were past the end stop at 151/153, so they land at 180 now.
+const int HOME_POSE[TOTAL_SERVOS] = { 90, 180,     180,   79,      83,     123 };
 
 // Motion Smoothing
 const unsigned long STEP_INTERVAL_US = 8000;

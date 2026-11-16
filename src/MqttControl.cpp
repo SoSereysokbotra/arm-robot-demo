@@ -23,6 +23,13 @@ static PubSubClient mqtt(wifiClient);
 
 // Wi-Fi credentials and the broker address are stored on the ESP32 itself, so
 // moving to a different network needs no reflash - see openSetupPortal().
+#if USE_AP_MODE
+// In AP mode the laptop is a DHCP client of the ESP32, so its address is one of
+// the first few handed out. Try each in turn rather than making anyone set it.
+static const char* AP_BROKERS[] = { "192.168.4.2", "192.168.4.3", "192.168.4.4", "192.168.4.5" };
+static int apBrokerIdx = 0;
+#endif
+
 static Preferences prefs;
 static String brokerHost = MQTT_HOST;      // Secrets.h value is just the default
 
@@ -118,6 +125,11 @@ static bool mqttReconnect() {
   if (!ok) {
     Serial.print("failed, rc=");
     Serial.println(mqtt.state());
+#if USE_AP_MODE
+    apBrokerIdx = (apBrokerIdx + 1) % (sizeof(AP_BROKERS) / sizeof(AP_BROKERS[0]));
+    brokerHost = AP_BROKERS[apBrokerIdx];
+    mqtt.setServer(brokerHost.c_str(), MQTT_PORT);   // try the next client next time
+#endif
     return false;
   }
   Serial.println("connected.");
@@ -128,10 +140,15 @@ static bool mqttReconnect() {
   mqtt.subscribe(T_BASE_TRIM);
   mqtt.subscribe(T_HOME);
   publishState(true);
+#if USE_AP_MODE
+  logMsg("Robot arm ready (AP mode). Broker: " + brokerHost);
+#else
   logMsg("Robot arm ready. IP: " + WiFi.localIP().toString());
+#endif
   return true;
 }
 
+#if !USE_AP_MODE
 // Blocks in a captive portal so the network and broker can be set from a phone.
 // Reached only when the arm cannot get online on its own, or on a forced reset.
 static void openSetupPortal(bool forget) {
@@ -163,6 +180,7 @@ static void openSetupPortal(bool forget) {
     Serial.println("Broker saved: " + brokerHost);
   }
 }
+#endif
 
 void mqttSetup() {
   prefs.begin("arm", false);
@@ -172,11 +190,28 @@ void mqttSetup() {
   mqtt.setBufferSize(512);
   for (int ch = 0; ch < TOTAL_SERVOS; ch++) lastPublishedAngle[ch] = -1;
 
+#if USE_AP_MODE
+  // The arm is the network: no router, no IP to look up, nothing to configure
+  // between venues - but whoever joins has no internet while they are on it.
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(ARM_AP_NAME, ARM_AP_PASS, 6, false, 4);
+  WiFi.setSleep(false);
+  brokerHost = AP_BROKERS[0];
+  mqtt.setServer(brokerHost.c_str(), MQTT_PORT);
+  Serial.println("AP mode. Join Wi-Fi \"" + String(ARM_AP_NAME) +
+                 "\" (password " + String(ARM_AP_PASS) + ")");
+  Serial.println("Arm at " + WiFi.softAPIP().toString() +
+                 " - run Mosquitto on the machine that joins");
+  return;
+#else
   pinMode(PORTAL_BUTTON, INPUT_PULLUP);
   bool forcePortal = (digitalRead(PORTAL_BUTTON) == LOW);
 
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
+  // The radio sleeps between beacons by default, adding 100-300 ms to every
+  // message in each direction. Latency matters far more here than the few mA.
+  WiFi.setSleep(false);
 
   if (!forcePortal) {
     // First try the network baked into Secrets.h, so a known setup just works.
@@ -201,16 +236,22 @@ void mqttSetup() {
 
   mqtt.setServer(brokerHost.c_str(), MQTT_PORT);
   Serial.println("Broker address: " + brokerHost);
+#endif
 }
 
 void mqttLoop() {
   static bool wifiWasConnected = false;
+#if USE_AP_MODE
+  bool wifiUp = (WiFi.softAPgetStationNum() > 0);      // somebody joined us
+  if (wifiUp && !wifiWasConnected) Serial.println("A device joined the hotspot.");
+  if (!wifiUp && wifiWasConnected) Serial.println("Hotspot is empty.");
+#else
   bool wifiUp = (WiFi.status() == WL_CONNECTED);
-
   if (wifiUp && !wifiWasConnected) {
     Serial.print("Wi-Fi connected, IP: ");
     Serial.println(WiFi.localIP());
   }
+#endif
   wifiWasConnected = wifiUp;
   if (!wifiUp) return;   // WiFi auto-reconnects in the background
 

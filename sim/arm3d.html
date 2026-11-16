@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARM-01 Workstation</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Everything is vendored in sim/lib, so the page works with no internet -
+     which is the case when the laptop is joined to the arm's own hotspot. -->
+<link rel="stylesheet" href="lib/fonts/plex.css">
 <style>
 :root {
   --ink:       #14181d;
@@ -179,6 +179,29 @@ input[type=range]:active::-webkit-slider-thumb { background: var(--accent); }
   border: 1px solid #ecd9b5; border-radius: 2px; padding: 1px 5px;
 }
 
+#steps { margin-top: 4px; max-height: 190px; overflow-y: auto; }
+.step {
+  display: flex; align-items: center; gap: 8px; padding: 5px 0;
+  border-bottom: 1px solid var(--rule-soft); font-family: var(--mono); font-size: 11px;
+}
+.step .n { color: var(--accent); font-weight: 600; width: 20px; flex: none; }
+.step .a { flex: 1; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step .a { cursor: pointer; }
+.step .a:hover { color: var(--accent); }
+.step .act {
+  border: 1px solid var(--rule); background: var(--panel); color: var(--ink-2);
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .04em;
+  border-radius: 3px; padding: 2px 5px; cursor: pointer; flex: none; line-height: 1.5;
+}
+.step .act:hover { border-color: var(--accent); color: var(--accent); }
+.step .x {
+  border: 0; background: transparent; color: var(--ink-3); cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 0 4px; flex: none;
+}
+.step .x:hover { color: var(--stop); }
+.step.now { background: var(--accent-bg); }
+#stepsEmpty { color: var(--ink-3); font-size: 11px; font-family: var(--mono); padding: 6px 0; }
+
 #activity {
   font-family: var(--mono); font-size: 11px; line-height: 1.75; color: var(--ink-2);
   max-height: 122px; overflow-y: auto; white-space: pre-wrap;
@@ -323,7 +346,7 @@ body.present #stage {
   <div class="brand"><span class="mark"><i></i></span><b>ARM-01</b><span>5-DOF / PCA9685</span></div>
   <span id="linkChip" class="chip"><span class="led"></span><span id="linkText">CONNECTING</span></span>
   <div class="spacer"></div>
-  <div class="field"><label for="host">BROKER</label><input id="host" value="192.168.1.194" spellcheck="false"></div>
+  <div class="field"><label for="host">BROKER</label><input id="host" value="127.0.0.1" spellcheck="false"></div>
   <button id="go" class="primary">Connect</button>
   <button id="presentBtn">Present <kbd>P</kbd></button>
 </header>
@@ -350,8 +373,9 @@ body.present #stage {
   <section id="paneControl" class="pane">
     <div id="offlineBanner" class="banner" hidden>
       <b>No link to the broker</b>
-      Mosquitto must run with a WebSocket listener:
-      <code>listener 9001 0.0.0.0</code> <code>protocol websockets</code>
+      Using the cloud broker needs internet on this device - a Wi-Fi login page
+      will block it. For a local broker instead, put the PC&rsquo;s IP here and run
+      Mosquitto with <code>listener 9001 0.0.0.0</code> <code>protocol websockets</code>.
     </div>
 
     <div class="group">
@@ -409,6 +433,49 @@ body.present #stage {
       <div class="btnrow gated is-locked">
         <button id="demoRun" class="primary">Run demo</button>
         <button id="demoStop" class="stop">Stop</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Record &amp; replay <em id="recState">0 steps</em></h2>
+      <div class="is-locked gated">
+        <div class="btnrow">
+          <button id="recAdd" class="primary">Record this position</button>
+        </div>
+        <div class="btnrow">
+          <button id="recPlay">Play</button>
+          <button id="recLoopBtn">Loop: off</button>
+          <button id="recClear">Clear</button>
+        </div>
+        <div class="btnrow">
+          <button id="recSave">Save to file</button>
+          <button id="recLoad">Load file</button>
+          <input id="recFile" type="file" accept=".json,application/json" hidden>
+        </div>
+      </div>
+      <div id="steps"></div>
+      <div id="stepsEmpty">Move the arm, then press Record. Repeat for each
+        position - including opening and closing the gripper - then press Play.</div>
+      <p class="hint">
+        A step stores a position, not a path - so within one step the base
+        turns first, then the joints. To control the order, press Record after
+        <b>each</b> movement: move the shoulder, Record, move the base, Record.
+        The green text on each row shows what that step actually moves.
+      </p>
+      <p class="hint">
+        Click a step to send the arm straight there. <b>&#9654;</b> plays from
+        that step on, <b>SET</b> overwrites it with where the arm is now, and
+        <b>&times;</b> deletes it - so a long sequence can be fixed in place.
+      </p>
+      <p class="hint">
+        The base is recorded as an estimated angle, since a continuous-rotation
+        servo reports no position. Replay turns it for the matching time, so it
+        drifts over a long run - press <b>Home</b> between takes to reset it.
+      </p>
+      <div class="jtop" style="margin-top:10px">
+        <span class="ax">SEC</span><span class="nm">pause between positions</span>
+        <input id="recDwell" class="num" type="number" min="0.3" max="10" step="0.1" value="1.5">
+        <span class="deg">s</span>
       </div>
     </div>
 
@@ -556,9 +623,22 @@ body.present #stage {
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.0/mqtt.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="lib/three.min.js"></script>
+<script src="lib/mqtt.min.js"></script>
+<script src="lib/qrcode.min.js"></script>
+<script>
+// Fall back to the CDN only if sim/lib is missing (a fresh clone).
+(function () {
+  const cdn = {
+    THREE:  "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+    mqtt:   "https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.0/mqtt.min.js",
+    QRCode: "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js",
+  };
+  for (const [g, url] of Object.entries(cdn)) {
+    if (typeof window[g] === "undefined") document.write('<script src="' + url + '"><\/script>');
+  }
+})();
+</script>
 <script>
 // A render-loop exception used to leave a blank viewport with no clue why.
 // Report the first one into the Activity panel and the page title.
@@ -578,11 +658,13 @@ addEventListener("error", e => reportError(e.error || e.message));
 // Each joint: which servo channel drives it, and how the 0-180 servo angle maps
 // onto the model.  invert reverses the direction; offset (deg) shifts neutral to
 // match how the horn is physically mounted.  model rotation = (90 - servo) + offset
+const TOPIC = "arm";   // must match MQTT_BASE_TOPIC in include/Config.h
+
 const JOINTS = {
-  shoulder:   { ch: 1, axis: "J1", label: "shoulder",    invert: true,  offset: -5 },
-  elbow:      { ch: 2, axis: "J2", label: "elbow",       invert: false, offset: -80 },
-  wristRoll:  { ch: 3, axis: "J3", label: "wrist roll",  invert: true,  offset: -55 },
-  wristPitch: { ch: 4, axis: "J4", label: "wrist pitch", invert: true,  offset: 30 },
+  shoulder:   { ch: 1, axis: "J1", label: "shoulder",    invert: true,  offset: -34 },
+  elbow:      { ch: 2, axis: "J2", label: "elbow",       invert: false, offset: -53 },
+  wristRoll:  { ch: 3, axis: "J3", label: "wrist roll",  invert: true,  offset: -80 },
+  wristPitch: { ch: 4, axis: "J4", label: "wrist pitch", invert: true,  offset: 4 },
   gripper:    { ch: 5, axis: "J5", label: "gripper",     invert: true,  offset: 15 },
 };
 // CH0 is a continuous-rotation servo: no angle to read back, so its position is
@@ -590,7 +672,7 @@ const JOINTS = {
 const BASE_CAL = { axis: "J0", label: "base", invert: false, offset: 0 };
 
 // Pose shown before the controller is reachable (HOME_POSE in include/Config.h)
-const REST_POSE = { shoulder: 151, elbow: 153, wristRoll: 54, wristPitch: 57, gripper: 90 };
+const REST_POSE = { shoulder: 180, elbow: 180, wristRoll: 79, wristPitch: 83, gripper: 123 };
 const GRIP_OPEN = 20, GRIP_CLOSED = 90;
 
 // Stored poses, keyed by servo channel
@@ -1234,9 +1316,13 @@ for (const [name, j] of Object.entries(JOINTS)) {
 
   const push = force => {
     const t = performance.now();
-    if (!force && t - ui.lastSent < 100) return;      // ~10 commands/s while dragging
+    // Send no faster than the link answers. On a local broker that is ~10/s;
+    // on a slow cloud broker it backs off, so commands stop piling up and the
+    // arm follows the slider instead of trailing a queue behind it.
+    const gap = Math.max(100, Math.min(600, rttMs || 100));
+    if (!force && t - ui.lastSent < gap) return;
     ui.lastSent = t;
-    pub("arm/servo/" + j.ch, slider.value);
+    pub(TOPIC + "/servo/" + j.ch, slider.value);
   };
   slider.addEventListener("pointerdown", () => { ui.dragging = true; });
   slider.addEventListener("pointerup", () => { ui.dragging = false; push(true); });
@@ -1251,7 +1337,7 @@ for (const [name, j] of Object.entries(JOINTS)) {
   num.addEventListener("change", () => {
     const v = Math.max(0, Math.min(180, Math.round(Number(num.value) || 0)));
     num.value = v; slider.value = v; target[name] = v;
-    pub("arm/servo/" + j.ch, v);
+    pub(TOPIC + "/servo/" + j.ch, v);
   });
   jointRows.appendChild(row);
 }
@@ -1272,17 +1358,17 @@ stageJoints.appendChild(baseCell);
 const stageBaseVal = baseCell.querySelector("v");
 
 document.querySelectorAll("[data-grip]").forEach(b => {
-  b.onclick = () => pub("arm/servo/" + JOINTS.gripper.ch, b.dataset.grip === "open" ? GRIP_OPEN : GRIP_CLOSED);
+  b.onclick = () => pub(TOPIC + "/servo/" + JOINTS.gripper.ch, b.dataset.grip === "open" ? GRIP_OPEN : GRIP_CLOSED);
 });
 document.querySelectorAll("[data-base]").forEach(b => {
-  b.onclick = () => pub("arm/base", b.dataset.base);
+  b.onclick = () => pub(TOPIC + "/base", b.dataset.base);
 });
 document.querySelectorAll("[data-preset]").forEach(b => {
   b.onclick = () => {
     const name = b.dataset.preset;
-    if (name === "home") { pub("arm/home", 1); return; }
+    if (name === "home") { pub(TOPIC + "/home", 1); return; }
     const pose = PRESETS[name];
-    if (pose) for (const [ch, deg] of Object.entries(pose)) pub("arm/servo/" + ch, deg);
+    if (pose) for (const [ch, deg] of Object.entries(pose)) pub(TOPIC + "/servo/" + ch, deg);
   };
 });
 
@@ -1290,11 +1376,11 @@ const baseSpeedEl = document.getElementById("baseSpeed");
 const baseSpeedNum = document.getElementById("baseSpeedNum");
 function setSpeedUI(v) { baseSpeedEl.value = v; baseSpeedNum.value = v; baseSpeedPct = Number(v); }
 baseSpeedEl.addEventListener("input", () => setSpeedUI(baseSpeedEl.value));
-baseSpeedEl.addEventListener("change", () => pub("arm/base/speed", baseSpeedEl.value));
+baseSpeedEl.addEventListener("change", () => pub(TOPIC + "/base/speed", baseSpeedEl.value));
 baseSpeedNum.addEventListener("change", () => {
   const v = Math.max(0, Math.min(100, Math.round(Number(baseSpeedNum.value) || 0)));
   setSpeedUI(v);
-  pub("arm/base/speed", v);
+  pub(TOPIC + "/base/speed", v);
 });
 
 // ---- tabs
@@ -1407,7 +1493,7 @@ qrUrlEl.addEventListener("change", () => {
 });
 
 // ============================================================== calibration
-const CAL_KEY = "arm3d-calibration-v4";
+const CAL_KEY = "arm3d-calibration-v11";
 const BASE_TRIM_DEFAULT = 307;
 let baseTrim = BASE_TRIM_DEFAULT;
 const CAL_DEFAULTS = JSON.parse(JSON.stringify(Object.fromEntries(
@@ -1473,7 +1559,7 @@ function setBaseTrimUI(v, send) {
   baseTrim = Math.max(240, Math.min(380, Math.round(Number(v) || BASE_TRIM_DEFAULT)));
   baseTrimEl.value = baseTrim;
   baseTrimNum.value = baseTrim;
-  if (send) pub("arm/base/trim", baseTrim);
+  if (send) pub(TOPIC + "/base/trim", baseTrim);
 }
 baseTrimEl.addEventListener("input", () => setBaseTrimUI(baseTrimEl.value, false));
 baseTrimEl.addEventListener("change", () => { setBaseTrimUI(baseTrimEl.value, true); saveCal(); });
@@ -1526,8 +1612,34 @@ async function waitWhile(ms, alive) {
 
 async function moveJoint(name, to, alive) {
   target[name] = to;
-  pub("arm/servo/" + JOINTS[name].ch, to);
+  pub(TOPIC + "/servo/" + JOINTS[name].ch, to);
   await waitWhile(DEMO.jointPauseSeconds * 1000, alive);
+}
+
+/** Turn the base by `delta` degrees. Open loop - a continuous-rotation servo
+ *  reports nothing - so this is a timed run, not a move to a position.
+ *  Replay uses the difference between consecutive steps, never the live
+ *  estimate: comparing against the estimate made the base "correct" its own
+ *  drift mid-sequence, which looked like a base move nobody recorded. */
+async function baseBy(delta, alive) {
+  if (Math.abs(delta) < 3) return;                 // nothing worth moving for
+  const pct = Math.max(10, Math.min(100, baseSpeedPct || 30));
+  const rate = baseDegPerSec * (pct / 100);        // degrees per second
+  const ms = (Math.abs(delta) / Math.max(rate, 1)) * 1000;
+
+  setSpeedUI(pct);
+  pub(TOPIC + "/base/speed", pct);
+  await sleep(80);
+  if (!alive()) return;
+  pub(TOPIC + "/base", delta > 0 ? "cw" : "ccw");
+  await waitWhile(ms, alive);
+  pub(TOPIC + "/base", "stop");
+  await sleep(150);
+}
+
+/** Absolute move, for jumping straight to one step on its own. */
+async function baseTo(want, alive) {
+  await baseBy(want - baseAngleDeg, alive);
 }
 
 /** Base: out by baseSweepDeg, hold, then the same amount back to the start. */
@@ -1536,23 +1648,23 @@ async function sweepBaseAndReturn(alive) {
   const runMs = (DEMO.baseSweepDeg / Math.max(rate, 1)) * 1000;
 
   setSpeedUI(DEMO.baseSpeedPct);
-  pub("arm/base/speed", DEMO.baseSpeedPct);
+  pub(TOPIC + "/base/speed", DEMO.baseSpeedPct);
   await sleep(120);
 
   for (const dir of ["cw", "ccw"]) {
     if (!alive()) return;
     setAction("demo", dir === "cw" ? "Rotating the base +" + DEMO.baseSweepDeg + "°"
                                    : "Returning the base to its start");
-    pub("arm/base", dir);
+    pub(TOPIC + "/base", dir);
     await waitWhile(dir === "cw" ? runMs : runMs * DEMO.returnFactor, alive);
-    pub("arm/base", "stop");
+    pub(TOPIC + "/base", "stop");
     if (dir === "cw") await waitWhile(DEMO.baseHoldSeconds * 1000, alive);
   }
 }
 
 function stopDemo(reason) {
   demoToken++;
-  pub("arm/base", "stop");
+  pub(TOPIC + "/base", "stop");
   demoStateEl.textContent = reason || "stopped";
   demoStateEl.style.color = "";
   setAction("status", reason === "finished" ? "Demo finished" : "Ready");
@@ -1577,9 +1689,247 @@ async function runDemo() {
       }
     } while (DEMO.loop && alive());
   } finally {
-    if (alive()) { pub("arm/base", "stop"); stopDemo("finished"); addLog("demo finished"); }
+    if (alive()) { pub(TOPIC + "/base", "stop"); stopDemo("finished"); addLog("demo finished"); }
   }
 }
+
+// ===================================================== record and replay ===
+// Jog the arm, press Record, repeat. Each step stores all five joints, so the
+// gripper is captured with the pose and a grab is just another recorded point.
+const REC_KEY = "arm3d-sequence";
+let steps = [];
+let recToken = 0;                       // bumping it stops a running playback
+let recLoop = false;
+
+const stepsEl = document.getElementById("steps");
+const stepsEmptyEl = document.getElementById("stepsEmpty");
+const recStateEl = document.getElementById("recState");
+const recDwellEl = document.getElementById("recDwell");
+
+try {
+  const saved = JSON.parse(localStorage.getItem(REC_KEY) || "[]");
+  if (Array.isArray(saved)) steps = saved;
+} catch (e) { /* ignore unreadable storage */ }
+
+function saveSteps() {
+  try { localStorage.setItem(REC_KEY, JSON.stringify(steps)); } catch (e) { /* ignore */ }
+}
+
+function describe(p) {
+  const joints = Object.entries(JOINTS)
+    .map(([n, j]) => j.axis + " " + Math.round(p[n]))
+    .join("  ");
+  return joints + (p.base === undefined ? "" : "  J0 " + Math.round(p.base));
+}
+
+/** What this step moves, compared with the one before it. */
+function stepChanges(i) {
+  const p = steps[i], q = i > 0 ? steps[i - 1] : null;
+  if (!q) return "start";
+  const moved = Object.entries(JOINTS)
+    .filter(([n]) => Math.abs(p[n] - q[n]) >= 2)
+    .map(([, j]) => j.axis);
+  if (p.base !== undefined && q.base !== undefined && Math.abs(p.base - q.base) >= 3) {
+    moved.push("J0");
+  }
+  return moved.length ? moved.join(" ") : "no change";
+}
+
+function drawSteps(active) {
+  stepsEl.innerHTML = "";
+  stepsEmptyEl.hidden = steps.length > 0;
+  steps.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "step" + (i === active ? " now" : "");
+    row.innerHTML = '<span class="n">' + (i + 1) + '</span>' +
+                    '<span class="a" title="move the arm here">' + describe(p) +
+                      '  <em style="font-style:normal;color:var(--accent)">' +
+                      stepChanges(i) + '</em></span>' +
+                    '<button class="act" data-do="from" title="play from this step">&#9654;</button>' +
+                    '<button class="act" data-do="set" title="overwrite with the arm\'s current position">SET</button>' +
+                    '<button class="x" title="remove">&times;</button>';
+
+    row.querySelector(".a").onclick = () => gotoStep(i);
+    row.querySelector('[data-do="from"]').onclick = () => playSteps(i);
+    row.querySelector('[data-do="set"]').onclick = () => {
+      const q = {};
+      for (const name of Object.keys(JOINTS)) q[name] = Math.round(target[name]);
+      q.base = Math.round(baseAngleDeg);
+      steps[i] = q;
+      saveSteps();
+      drawSteps();
+      addLog("step " + (i + 1) + " updated:  " + describe(q));
+    };
+    row.querySelector(".x").onclick = () => {
+      steps.splice(i, 1);
+      saveSteps();
+      drawSteps();
+    };
+    stepsEl.appendChild(row);
+  });
+  recStateEl.textContent = steps.length + (steps.length === 1 ? " step" : " steps");
+}
+
+document.getElementById("recAdd").onclick = () => {
+  const p = {};
+  for (const name of Object.keys(JOINTS)) p[name] = Math.round(target[name]);
+  // The base has no encoder, so store the running estimate. Replay turns it
+  // for however long that difference should take - open loop, and it drifts.
+  p.base = Math.round(baseAngleDeg);
+  steps.push(p);
+  saveSteps();
+  drawSteps();
+  addLog("recorded step " + steps.length + ":  " + describe(p));
+};
+
+document.getElementById("recClear").onclick = () => {
+  recToken++;
+  steps = [];
+  saveSteps();
+  drawSteps();
+  addLog("sequence cleared");
+};
+
+document.getElementById("recLoopBtn").onclick = e => {
+  recLoop = !recLoop;
+  e.target.textContent = "Loop: " + (recLoop ? "on" : "off");
+  e.target.classList.toggle("on", recLoop);
+};
+
+/** Send the arm to one recorded step, without running the sequence. */
+async function gotoStep(i) {
+  const p = steps[i];
+  if (!p) return;
+  if (!client || !client.connected) { addLog("needs a broker link"); return; }
+  const my = ++recToken;                 // cancels any run in progress
+  const alive = () => my === recToken;
+  drawSteps(i);
+  addLog("step " + (i + 1) + ":  " + describe(p));
+  if (p.base !== undefined) await baseTo(p.base, alive);
+  for (const [name, j] of Object.entries(JOINTS)) {
+    if (!alive()) return;
+    target[name] = p[name];
+    pub(TOPIC + "/servo/" + j.ch, p[name]);
+    await sleep(40);
+  }
+}
+
+/** Play the sequence, optionally starting part-way in. */
+async function playSteps(from) {
+  if (!steps.length) { addLog("nothing recorded yet"); return; }
+  if (!client || !client.connected) { addLog("replay needs a broker link"); return; }
+  let start = Number.isInteger(from) ? from : 0;
+
+  const my = ++recToken;
+  const alive = () => my === recToken;
+  const btn = document.getElementById("recPlay");
+  btn.textContent = "Stop";
+  addLog(start ? "replay from step " + (start + 1) : "replay started");
+
+  try {
+    do {
+      for (let i = start; i < steps.length && alive(); i++) {
+        drawSteps(i);
+        const p = steps[i];
+        // Only turn the base if THIS step recorded a different base angle to
+        // the one before it. Nothing recorded, nothing moves.
+        const prev = i > 0 ? steps[i - 1] : null;
+        if (p.base !== undefined && prev && prev.base !== undefined) {
+          await baseBy(p.base - prev.base, alive);
+        }
+        if (!alive()) break;
+        for (const [name, j] of Object.entries(JOINTS)) {
+          target[name] = p[name];
+          pub(TOPIC + "/servo/" + j.ch, p[name]);
+          await sleep(40);           // spread the five commands out a little
+        }
+        const dwell = Math.max(0.3, Number(recDwellEl.value) || 1.5);
+        await waitWhile(dwell * 1000, alive);
+      }
+      start = 0;                       // a looped run restarts from the top
+    } while (recLoop && alive());
+  } finally {
+    if (alive()) addLog("replay finished");
+    btn.textContent = "Play";
+    drawSteps();
+  }
+}
+
+document.getElementById("recPlay").onclick = () => {
+  if (document.getElementById("recPlay").textContent === "Stop") {
+    recToken++;                        // cancel the run in progress
+    addLog("replay stopped");
+    return;
+  }
+  playSteps(0);
+};
+
+// Browser storage is per-browser and vanishes with site data, so a sequence
+// worth keeping goes to a file you can back up or commit.
+document.getElementById("recSave").onclick = () => {
+  if (!steps.length) { addLog("nothing recorded to save"); return; }
+  const doc = {
+    kind: "arm-sequence",
+    version: 1,
+    saved: new Date().toISOString(),
+    dwellSeconds: Number(recDwellEl.value) || 1.5,
+    steps: steps,
+  };
+  const blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "arm-sequence.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  addLog("saved " + steps.length + " steps to arm-sequence.json");
+};
+
+const recFileEl = document.getElementById("recFile");
+document.getElementById("recLoad").onclick = () => recFileEl.click();
+recFileEl.addEventListener("change", () => {
+  const file = recFileEl.files && recFileEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let doc;
+    try { doc = JSON.parse(reader.result); }
+    catch (e) { addLog("could not read that file - not valid JSON"); return; }
+
+    const list = Array.isArray(doc) ? doc : doc.steps;
+    if (!Array.isArray(list) || !list.length) { addLog("no steps in that file"); return; }
+
+    // keep only what we understand, so a stray file cannot break playback
+    const clean = [];
+    for (const raw of list) {
+      if (!raw || typeof raw !== "object") continue;
+      const p = {};
+      let ok = true;
+      for (const name of Object.keys(JOINTS)) {
+        const v = Number(raw[name]);
+        if (!isFinite(v)) { ok = false; break; }
+        p[name] = Math.max(0, Math.min(180, Math.round(v)));
+      }
+      if (!ok) continue;
+      if (isFinite(Number(raw.base))) p.base = Math.round(Number(raw.base));
+      clean.push(p);
+    }
+    if (!clean.length) { addLog("that file had no usable steps"); return; }
+
+    recToken++;                       // stop anything playing
+    steps = clean;
+    saveSteps();
+    drawSteps();
+    if (doc.dwellSeconds) recDwellEl.value = doc.dwellSeconds;
+    addLog("loaded " + steps.length + " steps from " + file.name);
+  };
+  reader.readAsText(file);
+  recFileEl.value = "";               // let the same file be picked again
+});
+
+drawSteps();
 
 document.getElementById("demoRun").onclick = runDemo;
 document.getElementById("demoStop").onclick = () => { stopDemo("stopped"); addLog("demo stopped"); };
@@ -1594,7 +1944,7 @@ addEventListener("keydown", e => {
   else if (k === "escape" && presenting) setPresenting(false);
   else if (k === "d") runDemo();
   else if (k === " ") { stopDemo("stopped"); e.preventDefault(); }
-  else if (k === "h") pub("arm/home", 1);
+  else if (k === "h") pub(TOPIC + "/home", 1);
   else if (k === "1") goToView("front");
   else if (k === "2") goToView("side");
   else if (k === "3") goToView("top");
@@ -1611,7 +1961,11 @@ function connect(host) {
   setStatus(false, "connecting", false);
   try { localStorage.setItem("arm3d-host", host); } catch (e) { /* ignore */ }
 
-  client = mqtt.connect("ws://" + host + ":9001", {
+  // A bare host still means a local Mosquitto on ws://host:9001; anything that
+  // looks like a URL is used as-is, which is how we reach a cloud broker over
+  // wss - required, since an https page cannot open a plain ws connection.
+  const url = /^wss?:\/\//.test(host) ? host : "ws://" + host + ":9001";
+  client = mqtt.connect(url, {
     clientId: "arm3d-" + Math.random().toString(16).slice(2, 8),
     reconnectPeriod: 4000, connectTimeout: 6000,
   });
@@ -1619,31 +1973,31 @@ function connect(host) {
   client.on("connect", () => {
     setStatus(true, "linked", false);
     setAction("status", "Ready");
-    client.subscribe(["arm/state", "arm/status", "arm/log", "arm/base", "arm/base/speed"]);
-    pub("arm/base/speed", baseSpeedEl.value);
-    pub("arm/base/trim", baseTrim);          // the controller forgets this on reboot
-    addLog("broker link established (" + host + ":9001)");
+    client.subscribe([TOPIC + "/state", TOPIC + "/status", TOPIC + "/log", TOPIC + "/base", TOPIC + "/base/speed"]);
+    pub(TOPIC + "/base/speed", baseSpeedEl.value);
+    pub(TOPIC + "/base/trim", baseTrim);          // the controller forgets this on reboot
+    addLog("broker link established (" + url + ")");
   });
 
   client.on("message", (topic, buf) => {
     const payload = buf.toString();
     flowPulse("in");
-    if (topic !== "arm/state") tick("in", topic, payload);
+    if (topic !== TOPIC + "/state") tick("in", topic, payload);
 
-    if (topic === "arm/state") {
+    if (topic === TOPIC + "/state") {
       let s;
       try { s = JSON.parse(payload); } catch (e) { return; }
       for (const [name, j] of Object.entries(JOINTS)) {
         if (s[j.ch] !== undefined && !jointUI[name].dragging) target[name] = Number(s[j.ch]);
       }
       setStatus(true, "linked", false);
-    } else if (topic === "arm/status") {
+    } else if (topic === TOPIC + "/status") {
       setStatus(payload === "online", payload === "online" ? "linked" : "controller offline", false);
-    } else if (topic === "arm/base") {
+    } else if (topic === TOPIC + "/base") {
       baseDir = payload === "cw" ? 1 : payload === "ccw" ? -1 : 0;
-    } else if (topic === "arm/base/speed") {
+    } else if (topic === TOPIC + "/base/speed") {
       setSpeedUI(Number(payload));
-    } else if (topic === "arm/log") {
+    } else if (topic === TOPIC + "/log") {
       addLog(payload);
       if (pendingCmdAt) {                    // browser -> broker -> ESP32 -> back
         rttMs = Math.round(performance.now() - pendingCmdAt);
@@ -1662,7 +2016,7 @@ function connect(host) {
 const hostInput = document.getElementById("host");
 hostInput.value = new URLSearchParams(location.search).get("host")
   || (function () { try { return localStorage.getItem("arm3d-host"); } catch (e) { return null; } })()
-  || (location.hostname && location.protocol !== "file:" ? location.hostname : "192.168.1.194");
+  || "127.0.0.1";
 
 qrUrlEl.value = (function () { try { return localStorage.getItem("arm3d-qr"); } catch (e) { return null; } })()
   || "http://" + hostInput.value + ":1880/ui";
